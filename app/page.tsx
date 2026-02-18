@@ -4,18 +4,29 @@ import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 import {
+  Navbar,
   Hero,
   Models,
   ControlOutcome,
   Workflows,
   Footer,
 } from "@/components/landing";
+import Image from "next/image";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#e8eaed] text-black">
       {/* Navbar with Banner */}
-      {/* <Navbar /> */}
+      <div className="w-full bg-[#1a1a1a] text-white text-xs tracking-wide flex items-center justify-center gap-3 py-4">
+        <Image
+          src="/images/fw.avif"
+          alt="Figma x Weavy"
+          width={60}
+          height={15}
+          className="inline-block"
+        />
+        <span>Weavy is now a part of Figma</span>
+      </div>
 
       {/* Hero Section */}
       <section
@@ -27,6 +38,8 @@ export default function LandingPage() {
           backgroundSize: "15px 15px",
         }}
       >
+        <Navbar />
+
         {/* Headline */}
         <div className="w-full px-10 pt-10 pb-8 relative z-[5] pointer-events-none text-center">
           <h1 className="text-[3.5rem] md:text-[5rem] lg:text-[6.5rem] leading-[0.92] tracking-tight mb-6 flex items-center justify-center gap-8 md:gap-16">
