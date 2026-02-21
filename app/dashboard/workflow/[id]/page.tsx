@@ -21,6 +21,7 @@ export default function WorkflowEditorPage() {
     workflowName,
     nodes,
     edges,
+    requestSaveTrigger,
     setWorkflowId,
     setWorkflowName,
     setNodes,
@@ -153,6 +154,11 @@ export default function WorkflowEditorPage() {
       return () => clearTimeout(timer);
     }
   }, [nodes, edges, workflowName, isLoading, workflowId, saveWorkflow]);
+
+  // When user clicks Save in Sidebar, trigger a save now
+  useEffect(() => {
+    if (requestSaveTrigger > 0) saveWorkflow();
+  }, [requestSaveTrigger, saveWorkflow]);
 
   if (isLoading) {
     return <Loading message="Loading workflow..." />;

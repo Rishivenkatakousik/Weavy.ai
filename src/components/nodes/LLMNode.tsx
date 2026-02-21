@@ -18,7 +18,7 @@ import {
   LLMNodeData,
   TextNodeData,
   ImageNodeData,
-  OPENAI_MODELS,
+  GEMINI_MODELS,
 } from "@/src/types/workflow";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
@@ -155,11 +155,11 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         return;
       }
 
-      const response = await fetch("/api/openai", {
+      const response = await fetch("/api/gemini", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: nodeData.model || "gpt-4o",
+          model: nodeData.model || "gemini-2.0-flash",
           systemPrompt: nodeData.systemPrompt || undefined,
           userPrompt: fullUserPrompt,
           images: images.length > 0 ? images : undefined,
@@ -313,11 +313,11 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
           <span className="text-base font-medium text-white">LLM</span>
           <div className="relative">
             <select
-              value={nodeData.model || "gpt-4o"}
+              value={nodeData.model || "gemini-2.0-flash"}
               onChange={(e) => updateNodeData(id, { model: e.target.value })}
               className="cursor-pointer appearance-none rounded border border-neutral-600 bg-neutral-900 px-2 py-1 pr-6 text-xs text-neutral-300 focus:border-neutral-500 focus:outline-none hover:border-neutral-500"
             >
-              {OPENAI_MODELS.map((model) => (
+              {GEMINI_MODELS.map((model) => (
                 <option key={model.id} value={model.id}>
                   {model.name}
                 </option>

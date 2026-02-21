@@ -60,7 +60,9 @@ interface WorkflowState {
   setWorkflowName: (name: string) => void;
   resetWorkflow: () => void;
 
-  // No-op for Galaxy: persistence is done by the editor page via API only
+  // Triggers editor page to save; persistence is done by the editor page via API
+  requestSaveTrigger: number;
+  requestSave: () => void;
   saveWorkflow: () => void;
   loadWorkflow: (_id: string) => void;
   getWorkflowList: () => Workflow[];
@@ -87,7 +89,7 @@ const createImageNodeData = (): ImageNodeData => ({
 
 const createLLMNodeData = (): LLMNodeData => ({
   label: "LLM",
-  model: "gpt-4o",
+  model: "gemini-2.0-flash",
   systemPrompt: "",
   userPrompt: "",
   response: null,
@@ -259,8 +261,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   canUndo: () => get().historyIndex > 0,
   canRedo: () => get().historyIndex < get().history.length - 1,
 
+  requestSaveTrigger: 0,
+  requestSave: () =>
+    set((s) => ({ requestSaveTrigger: s.requestSaveTrigger + 1 })),
   saveWorkflow: () => {
-    // No-op: persistence is done by the editor page via API
+    // No-op: editor page performs PUT when requestSaveTrigger changes or on debounce
   },
 
   loadWorkflow: () => {
@@ -279,8 +284,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 50, y: 150 },
         data: {
           label: "Product Photo",
-          imageUrl: "/images/cetaphil-sample.jpg",
-          imageBase64: null,
+          // Inline 1x1 placeholder so demo works without a file; replace via upload for real use
+          imageUrl: null,
+          imageBase64:
+            "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRhyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUG/8QAIhAAAgEDBAMBAAAAAAAAAAAAAQIDAAQRBRIhMAUTQVFh/9oADAMBEQACEQADAPwA/9k=",
         },
       },
       {
@@ -299,7 +306,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 450, y: 200 },
         data: {
           label: "Analyze Product",
-          model: "gpt-4o",
+          model: "gemini-2.0-flash",
           systemPrompt:
             "You are a product analyst. Analyze the product image and specifications provided.",
           userPrompt:
@@ -316,7 +323,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 900, y: 50 },
         data: {
           label: "Write Instagram Caption",
-          model: "gpt-4o",
+          model: "gemini-2.0-flash",
           systemPrompt: "Write Instagram caption for the described product.",
           userPrompt:
             "Create an engaging Instagram caption for this product with relevant hashtags.",
@@ -332,7 +339,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 900, y: 320 },
         data: {
           label: "Write SEO Meta Description",
-          model: "gpt-4o",
+          model: "gemini-2.0-flash",
           systemPrompt: "Write SEO meta description for the described product.",
           userPrompt:
             "Write an SEO-optimized meta description (under 160 characters) for this product.",
@@ -348,7 +355,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 900, y: 590 },
         data: {
           label: "Write Amazon Listing",
-          model: "gpt-4o",
+          model: "gemini-2.0-flash",
           systemPrompt: "Write Amazon listing for the following described product.",
           userPrompt:
             "Based on the product analysis, write a compelling Amazon product listing with title, bullet points, and description.",

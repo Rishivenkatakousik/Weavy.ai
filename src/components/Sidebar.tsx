@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
   const {
     workflowName,
     setWorkflowName,
-    saveWorkflow,
+    requestSave,
     loadSampleWorkflow,
     exportWorkflow,
     importWorkflow,
@@ -264,7 +264,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
               </button>
               <button
                 type="button"
-                onClick={saveWorkflow}
+                onClick={requestSave}
                 className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-neutral-600 bg-transparent px-2 py-2 text-[10px] text-white transition-all hover:bg-neutral-800"
               >
                 <Save className="h-3 w-3" />
