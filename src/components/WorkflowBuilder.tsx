@@ -8,7 +8,7 @@ import { useWorkflowStore } from "@/src/store/workflowStore";
 
 function WorkflowBuilderInner() {
   const canvasWrapper = useRef<HTMLDivElement>(null);
-  const { addNode } = useWorkflowStore();
+  const { addNode, workflowName, setWorkflowName } = useWorkflowStore();
   const { screenToFlowPosition } = useReactFlow();
 
   const onDragStart = useCallback(
@@ -44,14 +44,23 @@ function WorkflowBuilderInner() {
   );
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-neutral-950">
-      <div ref={canvasWrapper} className="absolute inset-0">
-        <Canvas onDragOver={onDragOver} onDrop={onDrop} />
+    <div className="flex h-screen w-screen overflow-hidden bg-neutral-950">
+      <div className="h-full shrink-0 pointer-events-auto">
+        <Sidebar onDragStart={onDragStart} />
       </div>
 
-      <div className="absolute left-0 top-0 z-50 h-full pointer-events-none">
-        <div className="h-full pointer-events-auto">
-          <Sidebar onDragStart={onDragStart} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex h-14 shrink-0 items-center border-b border-neutral-800 bg-neutral-950 px-4">
+          <input
+            type="text"
+            value={workflowName}
+            onChange={(e) => setWorkflowName(e.target.value)}
+            className="w-full max-w-2xs rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm font-medium text-white placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
+            placeholder="untitled"
+          />
+        </div>
+        <div ref={canvasWrapper} className="relative flex-1 min-h-0">
+          <Canvas onDragOver={onDragOver} onDrop={onDrop} />
         </div>
       </div>
     </div>

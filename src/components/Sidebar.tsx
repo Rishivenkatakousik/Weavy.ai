@@ -162,16 +162,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
         }}
       >
         <div className="flex h-full w-[240px] shrink-0 flex-col">
-          <div className="flex h-14 shrink-0 items-center border-b border-neutral-700 px-4">
-            <input
-              type="text"
-              value={workflowName}
-              onChange={(e) => setWorkflowName(e.target.value)}
-              className="w-full rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-1.5 text-sm font-medium text-white placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
-              placeholder="untitled"
-            />
-          </div>
-
           <div className="shrink-0 border-b border-neutral-700 p-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-500" />
