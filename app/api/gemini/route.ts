@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { generateContentGemini } from "@/lib/gemini";
+import { generateContentOpenRouter } from "@/lib/openrouter";
 
 const llmRequestSchema = z.object({
   model: z.string().min(1, "Model is required"),
@@ -35,23 +36,24 @@ export async function POST(request: NextRequest) {
 
     const { model, systemPrompt, userPrompt, images } = parsed.data;
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
+    const useOpenRouter = !!process.env.OPENROUTER_API_KEY;
+    const useGemini =
+      !!process.env.GEMINI_API_KEY || !!process.env.GOOGLE_API_KEY;
+
+    if (!useOpenRouter && !useGemini) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "GEMINI_API_KEY is not configured. Add it to .env.local (get one from Google AI Studio).",
+            "Configure OPENROUTER_API_KEY (openrouter.ai) or GEMINI_API_KEY (Google AI Studio) in .env.local.",
         },
         { status: 500 }
       );
     }
 
-    const content = await generateContentGemini(
-      model,
-      systemPrompt,
-      userPrompt,
-      images
-    );
+    const content = useOpenRouter
+      ? await generateContentOpenRouter(model, systemPrompt, userPrompt, images)
+      : await generateContentGemini(model, systemPrompt, userPrompt, images);
 
     return NextResponse.json({
       success: true,
