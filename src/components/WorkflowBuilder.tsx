@@ -49,13 +49,13 @@ function WorkflowBuilderInner() {
         <Sidebar onDragStart={onDragStart} />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-14 shrink-0 items-center border-b border-neutral-800 bg-neutral-950 px-4">
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        <div className="absolute left-4 top-4 z-10">
           <input
             type="text"
             value={workflowName}
             onChange={(e) => setWorkflowName(e.target.value)}
-            className="w-full max-w-2xs rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm font-medium text-white placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
+            className="min-w-[180px] rounded-lg border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm font-medium text-white placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
             placeholder="untitled"
           />
         </div>
