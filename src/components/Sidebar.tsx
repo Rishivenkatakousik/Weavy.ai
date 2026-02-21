@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import {
   Type,
   ImageIcon,
@@ -25,6 +26,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
+  const { user } = useUser();
   const {
     workflowName,
     setWorkflowName,
@@ -34,6 +36,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     importWorkflow,
     createNewWorkflow,
   } = useWorkflowStore();
+
+  const initial =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() ||
+    user?.username ||
+    "";
+  const letter = initial.charAt(0).toUpperCase() || "U";
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [focusSearch, setFocusSearch] = useState(false);
@@ -110,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
           className="flex h-12 items-center justify-center border-b border-neutral-700 transition-colors hover:bg-neutral-800"
           title="Back to Dashboard"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-lg font-bold text-neutral-900">G</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FAFFC7] text-lg font-semibold text-neutral-900">{letter}</span>
         </Link>
 
         <div className="flex flex-col items-center gap-3 pt-4">

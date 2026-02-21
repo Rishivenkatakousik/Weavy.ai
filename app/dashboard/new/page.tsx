@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Loading from "@/components/Loading";
 
 export default function NewFilePage() {
   const router = useRouter();
@@ -32,10 +33,5 @@ export default function NewFilePage() {
     createAndRedirect();
   }, [router]);
 
-  return (
-    <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 p-12">
-      <span className="h-8 w-8 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
-      <p className="text-neutral-400">Creating new workflow…</p>
-    </div>
-  );
+  return <Loading message="Creating new workflow…" />;
 }

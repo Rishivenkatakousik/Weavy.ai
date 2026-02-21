@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Trash2 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import Loading from "@/components/Loading";
 
 function WorkflowIcon({ className }: { className?: string }) {
   return (
@@ -110,6 +111,17 @@ export default function DashboardPage() {
     return date.toLocaleDateString();
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-neutral-950">
+        <DashboardSidebar />
+        <main className="flex flex-1 flex-col overflow-auto">
+          <Loading className="min-h-0 flex-1" />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-neutral-950">
       <DashboardSidebar />
@@ -123,7 +135,7 @@ export default function DashboardPage() {
               type="button"
               onClick={createNewWorkflow}
               disabled={isCreating}
-              className="flex items-center gap-2 rounded-lg bg-neutral-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-600 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-[#FAFFC7] px-4 py-2 text-sm font-medium cursor-pointer text-black transition-colors disabled:opacity-50"
             >
               {isCreating ? (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-400 border-t-transparent" />
@@ -138,22 +150,19 @@ export default function DashboardPage() {
 
           <div className="flex-1 p-6">
             <h2 className="mb-4 text-sm font-medium text-neutral-400">My files</h2>
-            {isLoading ? (
-              <div className="flex items-center gap-2 text-neutral-400">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-500 border-t-transparent" />
-                Loading…
-              </div>
-            ) : workflows.length === 0 ? (
-              <div className="rounded-xl border border-neutral-700 bg-neutral-900/50 p-8 text-center">
-                <WorkflowIcon className="mx-auto h-12 w-12 text-neutral-600" />
-                <p className="mt-3 text-neutral-400">No workflows yet</p>
+            {workflows.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <p className="text-xl font-bold text-white">Nothing here yet!</p>
+                <p className="mt-2 text-sm text-neutral-400">
+                  Start weaving to bring your ideas to life.
+                </p>
                 <button
                   type="button"
                   onClick={createNewWorkflow}
                   disabled={isCreating}
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-500/90 px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-amber-500 disabled:opacity-50"
+                  className="mt-6 rounded-md border border-white/40 bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 cursor-pointer"
                 >
-                  Create your first workflow
+                  Create New File
                 </button>
               </div>
             ) : (

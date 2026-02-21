@@ -4,25 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkflowBuilder from "@/src/components/WorkflowBuilder";
 import { useWorkflowStore } from "@/src/store/workflowStore";
-
-function LoaderIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
+import Loading from "@/components/Loading";
 
 export default function WorkflowEditorPage() {
   const router = useRouter();
@@ -173,12 +155,7 @@ export default function WorkflowEditorPage() {
   }, [nodes, edges, workflowName, isLoading, workflowId, saveWorkflow]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-full flex-col items-center justify-center bg-neutral-950">
-        <LoaderIcon className="h-8 w-8 animate-spin text-amber-400" />
-        <p className="mt-4 text-sm text-neutral-400">Loading workflow...</p>
-      </div>
-    );
+    return <Loading message="Loading workflow..." />;
   }
 
   return <WorkflowBuilder />;
