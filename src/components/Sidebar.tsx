@@ -110,7 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
           className="flex h-12 items-center justify-center border-b border-neutral-700 transition-colors hover:bg-neutral-800"
           title="Back to Dashboard"
         >
-          <span className="text-xl font-bold text-white">G</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-lg font-bold text-neutral-900">G</span>
         </Link>
 
         <div className="flex flex-col items-center gap-3 pt-4">
@@ -243,10 +243,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
               <button
                 type="button"
                 onClick={loadSampleWorkflow}
-                className="col-span-2 flex flex-col items-center justify-center rounded-lg border border-neutral-600 bg-transparent p-3 transition-all hover:bg-neutral-800 group"
+                className="col-span-2 flex flex-col items-center justify-center rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 transition-all hover:bg-amber-500/20 group"
               >
-                <Package className="mb-1 h-5 w-5 text-white transition-colors" />
-                <span className="text-center text-[10px] text-white transition-colors">
+                <Package className="mb-1 h-5 w-5 text-amber-400 transition-colors" />
+                <span className="text-center text-[10px] text-amber-200 transition-colors">
                   Sample Workflow
                 </span>
               </button>

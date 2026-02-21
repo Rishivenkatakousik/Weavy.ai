@@ -422,7 +422,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
           type="button"
           disabled={nodeData.isLoading}
           onClick={handleRun}
-          className="flex items-center gap-2 rounded-lg bg-neutral-600 px-4 py-2 text-xs font-medium text-white hover:bg-neutral-500 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-xs font-medium text-neutral-900 hover:bg-amber-400 disabled:opacity-50"
         >
           <ArrowRight className="h-4 w-4" />
           <span>Run Model</span>

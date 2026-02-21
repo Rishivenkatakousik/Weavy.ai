@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/(.*)\\.(ico|png|jpg|jpeg|gif|avif|webp|svg)",
 ]);
 
+// All other routes (including /dashboard and /dashboard/workflow/*) require auth
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth.protect();
