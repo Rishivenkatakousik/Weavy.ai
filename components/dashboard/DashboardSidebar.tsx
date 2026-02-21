@@ -40,6 +40,17 @@ function PlayIcon({ className }: { className?: string }) {
   );
 }
 
+function ImageGenIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="8" height="8" rx="1" />
+      <rect x="13" y="3" width="8" height="8" rx="1" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l4-4 3 3 4-4 3 3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18" />
+    </svg>
+  );
+}
+
 export default function DashboardSidebar() {
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -162,6 +173,13 @@ export default function DashboardSidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </Link>
+        </Link>
+        <Link
+          href="/dashboard/new?template=image-gen"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-300 transition-colors hover:bg-neutral-800"
+        >
+          <ImageGenIcon className="h-5 w-5 shrink-0 text-neutral-400" />
+          Sample: Image from inputs
         </Link>
         <Link
           href="#"

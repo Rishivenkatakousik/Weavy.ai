@@ -83,3 +83,77 @@ export async function generateContentOpenRouter(
   const text = data.choices?.[0]?.message?.content;
   return typeof text === "string" ? text : "";
 }
+
+/** OpenRouter model that supports image generation (output_modalities include "image"). */
+const IMAGE_MODEL = "google/gemini-2.5-flash-image-preview";
+
+/**
+ * Generate an image via OpenRouter using an image-capable model.
+ * Returns the first image as a data URL, or null if none.
+ */
+export async function generateImageOpenRouter(
+  userPrompt: string,
+  systemPrompt?: string,
+  images?: string[]
+): Promise<string | null> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENROUTER_API_KEY is not configured.");
+  }
+
+  const userContent: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [];
+  userContent.push({ type: "text", text: userPrompt });
+  if (images?.length) {
+    for (const img of images) {
+      userContent.push({
+        type: "image_url",
+        image_url: { url: toDataUrl(img) },
+      });
+    }
+  }
+
+  const messages: Array<{ role: string; content: string | typeof userContent }> = [];
+  if (systemPrompt) {
+    messages.push({ role: "system", content: systemPrompt });
+  }
+  messages.push({ role: "user", content: userContent });
+
+  const res = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    },
+    body: JSON.stringify({
+      model: IMAGE_MODEL,
+      messages,
+      modalities: ["image", "text"],
+      image_config: { aspect_ratio: "1:1" },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: { message: res.statusText } }));
+    const msg = err?.error?.message ?? err?.message ?? res.statusText;
+    throw new Error(`OpenRouter image: ${msg}`);
+  }
+
+  const data = (await res.json()) as {
+    choices?: Array<{
+      message?: {
+        content?: string;
+        images?: Array<{ type?: string; image_url?: { url: string } }>;
+      };
+    }>;
+    error?: { message?: string };
+  };
+
+  if (data.error?.message) {
+    throw new Error(data.error.message);
+  }
+
+  const firstImage = data.choices?.[0]?.message?.images?.[0];
+  const url = firstImage?.image_url?.url;
+  return typeof url === "string" ? url : null;
+}
