@@ -412,7 +412,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
           type="button"
           disabled={imageInputCount >= 5}
           onClick={addImageInput}
-          className="flex items-center gap-2 text-xs text-neutral-400 hover:text-white disabled:opacity-50"
+          className="flex items-center gap-2 text-xs text-neutral-400 hover:text-white disabled:opacity-50 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>Add another image input</span>
@@ -422,7 +422,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
           type="button"
           disabled={nodeData.isLoading}
           onClick={handleRun}
-          className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-xs font-medium text-neutral-900 hover:bg-amber-400 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium cursor-pointer text-white disabled:opacity-50"
         >
           <ArrowRight className="h-4 w-4" />
           <span>Run Model</span>

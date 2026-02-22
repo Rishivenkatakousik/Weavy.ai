@@ -281,36 +281,52 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       {
         id: "img_product",
         type: "image",
-        position: { x: 50, y: 150 },
+        position: { x: 50, y: 60 },
         data: {
           label: "Product Photo",
-          // Inline 1x1 placeholder so demo works without a file; replace via upload for real use
           imageUrl: null,
           imageBase64:
             "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRhyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUG/8QAIhAAAgEDBAMBAAAAAAAAAAAAAQIDAAQRBRIhMAUTQVFh/9oADAMBEQACEQADAPwA/9k=",
         },
       },
       {
-        id: "text_specs",
+        id: "text_product",
         type: "text",
-        position: { x: 50, y: 400 },
+        position: { x: 80, y: 300 },
         data: {
-          label: "Product Name & Specs",
+          label: "Product Name & Description",
           content:
-            "Cetaphil Paraben, Sulphate-Free Gentle Skin Hydrating Face Wash Cleanser with Niacinamide, Vitamin B5 for Dry to Normal, Sensitive Skin - 125ml",
+            "A premium home fragrance scented candle in a minimalist ceramic jar, designed to create a warm and relaxing ambiance. Crafted with clean-burning natural wax and a cotton wick for a long-lasting, even burn. Subtle soothing fragrance ideal for relaxation, self-care, meditation, and home décor. Elegant neutral-toned aesthetic suitable for modern interiors and gifting.",
         },
       },
       {
-        id: "llm_analyze",
+        id: "llm_strategist",
         type: "llm",
-        position: { x: 450, y: 200 },
+        position: { x: 380, y: 80 },
         data: {
-          label: "Analyze Product",
+          label: "Brand Strategist AI",
           model: "gemini-2.0-flash",
           systemPrompt:
-            "You are a product analyst. Analyze the product image and specifications provided.",
+            "You are a brand strategist. Analyze the product (image and description) and output a structured brand foundation. Include: 1) Brand name ideas, 2) Target audience, 3) Unique selling proposition, 4) Brand personality, 5) Tone of voice, 6) Key benefits, 7) Marketing angles. Be concise and structured so other specialists can use this brief.",
+          userPrompt: "Analyze this product and output the structured brand foundation above.",
+          response: null,
+          generatedImage: null,
+          isLoading: false,
+          error: null,
+          imageInputCount: 1,
+        },
+      },
+      {
+        id: "llm_social",
+        type: "llm",
+        position: { x: 880, y: 50 },
+        data: {
+          label: "Social Media Manager",
+          model: "gemini-2.0-flash",
+          systemPrompt:
+            "You are a social media manager. Given the brand strategy brief, produce on-brand social content.",
           userPrompt:
-            "Analyze this product and provide key selling points and target audience.",
+            "Using the brand strategy above, write: 1) Instagram caption, 2) TikTok caption, 3) Hashtags.",
           response: null,
           generatedImage: null,
           isLoading: false,
@@ -318,15 +334,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         },
       },
       {
-        id: "llm_instagram",
+        id: "llm_ads",
         type: "llm",
-        position: { x: 900, y: 50 },
+        position: { x: 960, y: 360 },
         data: {
-          label: "Write Instagram Caption",
+          label: "Performance Ads Copywriter",
           model: "gemini-2.0-flash",
-          systemPrompt: "Write Instagram caption for the described product.",
+          systemPrompt:
+            "You are a performance ads copywriter. Given the brand strategy brief, produce paid ad copy.",
           userPrompt:
-            "Create an engaging Instagram caption for this product with relevant hashtags.",
+            "Using the brand strategy above, write: 1) Facebook ad primary text, 2) Google ad headlines, 3) Google ad descriptions.",
           response: null,
           generatedImage: null,
           isLoading: false,
@@ -334,15 +351,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         },
       },
       {
-        id: "llm_seo",
+        id: "llm_landing",
         type: "llm",
-        position: { x: 900, y: 320 },
+        position: { x: 940, y: 970 },
         data: {
-          label: "Write SEO Meta Description",
+          label: "Landing Page Copywriter",
           model: "gemini-2.0-flash",
-          systemPrompt: "Write SEO meta description for the described product.",
+          systemPrompt:
+            "You are a landing page and conversion copywriter. Given the brand strategy brief, produce conversion-focused landing page copy.",
           userPrompt:
-            "Write an SEO-optimized meta description (under 160 characters) for this product.",
+            "Using the brand strategy above, write: hero headline, subheadline, features section, call-to-action, short product description.",
           response: null,
           generatedImage: null,
           isLoading: false,
@@ -350,15 +368,33 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         },
       },
       {
-        id: "llm_amazon",
+        id: "llm_email",
         type: "llm",
-        position: { x: 900, y: 590 },
+        position: { x: 1000, y: 1280 },
         data: {
-          label: "Write Amazon Listing",
+          label: "Email Marketing",
           model: "gemini-2.0-flash",
-          systemPrompt: "Write Amazon listing for the following described product.",
+          systemPrompt:
+            "You are an email and lifecycle marketer. Given the brand strategy brief, produce launch and promo email copy.",
           userPrompt:
-            "Based on the product analysis, write a compelling Amazon product listing with title, bullet points, and description.",
+            "Using the brand strategy above, write: launch email subject line, launch email body, promo email version.",
+          response: null,
+          generatedImage: null,
+          isLoading: false,
+          error: null,
+        },
+      },
+      {
+        id: "llm_video",
+        type: "llm",
+        position: { x: 840, y: 670 },
+        data: {
+          label: "Video Script Generator",
+          model: "gemini-2.0-flash",
+          systemPrompt:
+            "You are a video ad scriptwriter. Given the brand strategy brief, produce a 30-second ad script with Hook, Problem, Solution, CTA.",
+          userPrompt:
+            "Using the brand strategy above, write a 30-second ad script: Hook, Problem, Solution, CTA.",
           response: null,
           generatedImage: null,
           isLoading: false,
@@ -371,42 +407,60 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       {
         id: "e1",
         source: "img_product",
-        target: "llm_analyze",
+        target: "llm_strategist",
         targetHandle: "image-0",
         animated: true,
         style: { stroke: "#34d399", strokeWidth: 2 },
       },
       {
         id: "e2",
-        source: "text_specs",
-        target: "llm_analyze",
+        source: "text_product",
+        target: "llm_strategist",
         targetHandle: "prompt",
         animated: true,
         style: { stroke: "#c084fc", strokeWidth: 2 },
       },
       {
         id: "e3",
-        source: "llm_analyze",
+        source: "llm_strategist",
         sourceHandle: "output",
-        target: "llm_amazon",
+        target: "llm_social",
         targetHandle: "prompt",
         animated: true,
         style: { stroke: "#c084fc", strokeWidth: 2 },
       },
       {
         id: "e4",
-        source: "llm_analyze",
+        source: "llm_strategist",
         sourceHandle: "output",
-        target: "llm_instagram",
+        target: "llm_ads",
         targetHandle: "prompt",
         animated: true,
         style: { stroke: "#c084fc", strokeWidth: 2 },
       },
       {
         id: "e5",
-        source: "llm_analyze",
+        source: "llm_strategist",
         sourceHandle: "output",
-        target: "llm_seo",
+        target: "llm_landing",
+        targetHandle: "prompt",
+        animated: true,
+        style: { stroke: "#c084fc", strokeWidth: 2 },
+      },
+      {
+        id: "e6",
+        source: "llm_strategist",
+        sourceHandle: "output",
+        target: "llm_email",
+        targetHandle: "prompt",
+        animated: true,
+        style: { stroke: "#c084fc", strokeWidth: 2 },
+      },
+      {
+        id: "e7",
+        source: "llm_strategist",
+        sourceHandle: "output",
+        target: "llm_video",
         targetHandle: "prompt",
         animated: true,
         style: { stroke: "#c084fc", strokeWidth: 2 },
@@ -414,8 +468,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     ];
 
     set({
-      workflowId: "sample_product_listing",
-      workflowName: "Product Listing Generator",
+      workflowId: "sample_brand_strategist",
+      workflowName: "Brand Strategist AI",
       nodes: sampleNodes,
       edges: sampleEdges,
       history: [],
