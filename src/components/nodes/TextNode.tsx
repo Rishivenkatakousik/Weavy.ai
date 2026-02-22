@@ -30,7 +30,7 @@ const TextNode = memo(({ id, data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`min-w-[380px] max-w-[450px] rounded-lg border bg-neutral-800 shadow-lg transition-all duration-200 ${
+      className={`min-w-[420px] max-w-[560px] rounded-lg border bg-neutral-800 shadow-lg transition-all duration-200 ${
         selected ? "border-neutral-500 shadow-white/5" : "border-neutral-700 hover:border-neutral-600"
       }`}
     >
@@ -43,7 +43,7 @@ const TextNode = memo(({ id, data, selected }: NodeProps) => {
             type="text"
             value={nodeData.label}
             onChange={handleLabelChange}
-            className="w-24 truncate rounded bg-transparent px-1 text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-neutral-500"
+            className="min-w-[6rem] max-w-[14rem] flex-1 rounded bg-transparent px-1 text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-neutral-500"
           />
         </div>
         <button
@@ -60,7 +60,7 @@ const TextNode = memo(({ id, data, selected }: NodeProps) => {
           value={nodeData.content}
           onChange={handleContentChange}
           placeholder="Enter text content..."
-          className="h-40 w-full resize-none rounded border border-neutral-700 bg-neutral-950 p-2.5 text-sm font-normal text-neutral-300 placeholder-neutral-500 focus:border-neutral-600 focus:outline-none"
+          className="h-44 w-full min-w-0 resize-none rounded border border-neutral-700 bg-neutral-950 p-2.5 text-sm font-normal text-neutral-300 placeholder-neutral-500 focus:border-neutral-600 focus:outline-none"
         />
       </div>
 

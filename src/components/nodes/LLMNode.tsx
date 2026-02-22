@@ -64,6 +64,13 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
 
   const handleDelete = useCallback(() => deleteNode(id), [id, deleteNode]);
 
+  const handleLabelChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateNodeData(id, { label: e.target.value });
+    },
+    [id, updateNodeData]
+  );
+
   const handleHandleDoubleClick = useCallback(
     (
       e: React.MouseEvent,
@@ -310,7 +317,12 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
 
       <div className="flex items-center justify-between border-b border-neutral-600 px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-base font-medium text-white">LLM</span>
+          <input
+            type="text"
+            value={nodeData.label ?? "LLM"}
+            onChange={handleLabelChange}
+            className="min-w-[4rem] max-w-[10rem] rounded bg-transparent px-1 text-base font-medium text-white focus:outline-none focus:ring-1 focus:ring-neutral-500"
+          />
           <div className="relative">
             <select
               value={nodeData.model || "gemini-2.0-flash"}

@@ -88,7 +88,7 @@ const ImageNode = memo(({ id, data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`min-w-[312px] max-w-[416px] rounded-lg border bg-neutral-800 shadow-lg transition-all duration-200 ${
+      className={`min-w-[360px] max-w-[480px] rounded-lg border bg-neutral-800 shadow-lg transition-all duration-200 ${
         selected ? "border-neutral-500 shadow-white/5" : "border-neutral-700 hover:border-neutral-600"
       }`}
     >
@@ -101,7 +101,7 @@ const ImageNode = memo(({ id, data, selected }: NodeProps) => {
             type="text"
             value={nodeData.label}
             onChange={handleLabelChange}
-            className="w-16 truncate rounded bg-transparent px-1 text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-neutral-500"
+            className="min-w-[5rem] max-w-[12rem] flex-1 rounded bg-transparent px-1 text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-neutral-500"
           />
         </div>
         <button
@@ -123,7 +123,7 @@ const ImageNode = memo(({ id, data, selected }: NodeProps) => {
         />
 
         {isUploading ? (
-          <div className="flex h-36 w-full flex-col items-center justify-center gap-2 rounded border-2 border-dashed border-neutral-700">
+          <div className="flex h-40 w-full min-w-0 flex-col items-center justify-center gap-2 rounded border-2 border-dashed border-neutral-700">
             <Loader2 className="h-6 w-6 animate-spin text-neutral-500" />
             <span className="text-xs text-neutral-500">Uploading...</span>
           </div>
@@ -132,7 +132,7 @@ const ImageNode = memo(({ id, data, selected }: NodeProps) => {
             <img
               src={displayImageSrc}
               alt="Uploaded"
-              className="h-36 w-full rounded border border-neutral-700 object-cover"
+              className="h-40 w-full min-w-0 rounded border border-neutral-700 object-cover"
             />
             <button
               type="button"
@@ -149,7 +149,7 @@ const ImageNode = memo(({ id, data, selected }: NodeProps) => {
             onClick={() => fileInputRef.current?.click()}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            className="flex h-36 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-neutral-700 hover:border-neutral-600 hover:bg-neutral-900"
+            className="flex h-40 w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-neutral-700 hover:border-neutral-600 hover:bg-neutral-900"
           >
             <Upload className="h-6 w-6 text-neutral-500" />
             <span className="text-xs text-neutral-500">Upload</span>
