@@ -284,9 +284,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 50, y: 60 },
         data: {
           label: "Product Photo",
-          imageUrl: null,
-          imageBase64:
-            "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRhyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUG/8QAIhAAAgEDBAMBAAAAAAAAAAAAAQIDAAQRBRIhMAUTQVFh/9oADAMBEQACEQADAPwA/9k=",
+          imageUrl:
+            "https://res.cloudinary.com/dibvsl8ic/image/upload/v1771746701/galaxy-workflows/cncq1ecpqufdqx9xyu6e.jpg",
+          imageBase64: null,
         },
       },
       {
