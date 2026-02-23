@@ -22,7 +22,20 @@
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.log
+.eslintcache
+
+# Prisma generated client (custom output)
+generated/
+
+.idea/
+*.swp
+*.swo
+*~
+
+.turbo
 
 # debug
 npm-debug.log*

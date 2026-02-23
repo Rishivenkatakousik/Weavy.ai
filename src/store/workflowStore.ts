@@ -14,6 +14,7 @@ import {
   LLMNodeData,
   Workflow,
 } from "@/src/types/workflow";
+import { getImageGenTemplate } from "@/src/templates/imageGenWorkflow";
 
 interface HistoryState {
   nodes: WorkflowNode[];
@@ -68,6 +69,7 @@ interface WorkflowState {
   getWorkflowList: () => Workflow[];
 
   loadSampleWorkflow: () => void;
+  loadSampleWorkflow2: () => void;
   exportWorkflow: () => string;
   importWorkflow: (json: string) => void;
   createNewWorkflow: () => void;
@@ -472,6 +474,18 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       workflowName: "Brand Strategist AI",
       nodes: sampleNodes,
       edges: sampleEdges,
+      history: [],
+      historyIndex: -1,
+    });
+  },
+
+  loadSampleWorkflow2: () => {
+    const { nodes, edges } = getImageGenTemplate();
+    set({
+      workflowId: "sample_workflow_2",
+      workflowName: "Sample Workflow 2",
+      nodes,
+      edges,
       history: [],
       historyIndex: -1,
     });

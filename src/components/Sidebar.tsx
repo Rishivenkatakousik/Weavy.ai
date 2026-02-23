@@ -32,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     setWorkflowName,
     requestSave,
     loadSampleWorkflow,
+    loadSampleWorkflow2,
     exportWorkflow,
     importWorkflow,
     createNewWorkflow,
@@ -246,6 +247,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
                 <Package className="mb-1 h-5 w-5 text-amber-400 transition-colors" />
                 <span className="text-center text-[10px] text-amber-200 transition-colors">
                   Sample Workflow
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={loadSampleWorkflow2}
+                className="col-span-2 flex flex-col items-center justify-center rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 transition-all hover:bg-amber-500/20 group"
+              >
+                <Package className="mb-1 h-5 w-5 text-amber-400 transition-colors" />
+                <span className="text-center text-[10px] text-amber-200 transition-colors">
+                  Sample Workflow 2
                 </span>
               </button>
             </div>

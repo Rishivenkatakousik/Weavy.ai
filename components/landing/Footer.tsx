@@ -39,11 +39,11 @@ export default function Footer() {
                     <div className="flex items-center gap-8 mb-10">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-[#3a3f37] rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-xl">N</span>
+                                <span className="text-white font-bold text-xl">W</span>
                             </div>
                             <div className="border-l border-white pl-4">
                                 <span className="text-white font-semibold text-sm tracking-wide block">
-                                    NODEFY
+                                    WEAVY
                                 </span>
                                 <span className="text-white text-xs uppercase tracking-wider">
                                     AI Workflows
@@ -51,7 +51,7 @@ export default function Footer() {
                             </div>
                         </div>
                         <p className="text-white text-sm max-w-md leading-relaxed hidden md:block">
-                            Nodefy is a new way to create. We&apos;re bridging the gap
+                            Weavy is a new way to create. We&apos;re bridging the gap
                             between AI capabilities and human creativity, to continue the
                             tradition of craft in artistic expression. We call it AI
                             Workflows.
@@ -146,7 +146,7 @@ export default function Footer() {
                             </div>
                         </div>
                         <span className="text-black pl-1 pt-3 text-[12px] uppercase tracking-wider">
-                            Nodefy © 2025. All Rights Reserved.
+                            Weavy © 2025. All Rights Reserved.
                         </span>
                     </div>
                 </div>
