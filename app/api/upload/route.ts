@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { uploadImage } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/transloadit";
 
 export async function POST(request: NextRequest) {
   try {
