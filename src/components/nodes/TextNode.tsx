@@ -8,7 +8,8 @@ import { useWorkflowStore } from "@/src/store/workflowStore";
 
 const TextNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as TextNodeData;
-  const { updateNodeData, deleteNode } = useWorkflowStore();
+  const { updateNodeData, deleteNode, edges } = useWorkflowStore();
+  const outputConnected = edges.some((e) => e.source === id);
 
   const handleContentChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -55,12 +56,16 @@ const TextNode = memo(({ id, data, selected }: NodeProps) => {
         </button>
       </div>
 
-      <div className="p-3">
+      <div
+        className={`p-3 ${outputConnected ? "opacity-75" : ""}`}
+        title={outputConnected ? "Output is connected — edit from connected node" : undefined}
+      >
         <textarea
           value={nodeData.content}
           onChange={handleContentChange}
-          placeholder="Enter text content..."
-          className="h-44 w-full min-w-0 resize-none rounded border border-neutral-700 bg-neutral-950 p-2.5 text-sm font-normal text-neutral-300 placeholder-neutral-500 focus:border-neutral-600 focus:outline-none"
+          placeholder={outputConnected ? "Connected — input from upstream" : "Enter text content..."}
+          disabled={outputConnected}
+          className="h-44 w-full min-w-0 resize-none rounded border border-neutral-700 bg-neutral-950 p-2.5 text-sm font-normal text-neutral-300 placeholder-neutral-500 focus:border-neutral-600 focus:outline-none disabled:cursor-not-allowed disabled:bg-neutral-900 disabled:text-neutral-500"
         />
       </div>
 

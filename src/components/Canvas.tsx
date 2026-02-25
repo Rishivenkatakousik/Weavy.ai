@@ -28,11 +28,17 @@ import { useWorkflowStore } from "@/src/store/workflowStore";
 import TextNode from "./nodes/TextNode";
 import ImageNode from "./nodes/ImageNode";
 import LLMNode from "./nodes/LLMNode";
+import VideoNode from "./nodes/VideoNode";
+import CropImageNode from "./nodes/CropImageNode";
+import ExtractFrameNode from "./nodes/ExtractFrameNode";
 
 const nodeTypes = {
   text: TextNode,
   image: ImageNode,
   llm: LLMNode,
+  video: VideoNode,
+  cropImage: CropImageNode,
+  extractFrame: ExtractFrameNode,
 };
 
 interface CanvasProps {
@@ -214,6 +220,12 @@ const CanvasInner: React.FC<CanvasProps> = ({ onDragOver, onDrop }) => {
                 return "#737373";
               case "llm":
                 return "#a3a3a3";
+              case "video":
+                return "#6366f1";
+              case "cropImage":
+                return "#22c55e";
+              case "extractFrame":
+                return "#eab308";
               default:
                 return "#404040";
             }

@@ -13,7 +13,10 @@ function WorkflowBuilderInner() {
   const { screenToFlowPosition } = useReactFlow();
 
   const onDragStart = useCallback(
-    (event: React.DragEvent, nodeType: "text" | "image" | "llm") => {
+    (
+      event: React.DragEvent,
+      nodeType: "text" | "image" | "llm" | "video" | "cropImage" | "extractFrame"
+    ) => {
       event.dataTransfer.setData("application/reactflow", nodeType);
       event.dataTransfer.effectAllowed = "move";
     },
@@ -31,7 +34,7 @@ function WorkflowBuilderInner() {
 
       const type = event.dataTransfer.getData(
         "application/reactflow"
-      ) as "text" | "image" | "llm";
+      ) as "text" | "image" | "llm" | "video" | "cropImage" | "extractFrame";
       if (!type) return;
 
       const position = screenToFlowPosition({

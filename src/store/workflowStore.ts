@@ -12,6 +12,9 @@ import {
   TextNodeData,
   ImageNodeData,
   LLMNodeData,
+  VideoNodeData,
+  CropImageNodeData,
+  ExtractFrameNodeData,
   Workflow,
 } from "@/src/types/workflow";
 import { getImageGenTemplate } from "@/src/templates/imageGenWorkflow";
@@ -37,12 +40,19 @@ interface WorkflowState {
   onConnect: (connection: Connection) => void;
 
   addNode: (
-    type: "text" | "image" | "llm",
+    type: "text" | "image" | "llm" | "video" | "cropImage" | "extractFrame",
     position: { x: number; y: number }
   ) => void;
   updateNodeData: (
     nodeId: string,
-    data: Partial<TextNodeData | ImageNodeData | LLMNodeData>
+    data: Partial<
+      | TextNodeData
+      | ImageNodeData
+      | LLMNodeData
+      | VideoNodeData
+      | CropImageNodeData
+      | ExtractFrameNodeData
+    >
   ) => void;
   deleteNode: (nodeId: string) => void;
   deleteEdgeByHandle: (
@@ -99,6 +109,28 @@ const createLLMNodeData = (): LLMNodeData => ({
   isLoading: false,
   error: null,
   imageInputCount: 1,
+});
+
+const createVideoNodeData = (): VideoNodeData => ({
+  label: "Video",
+  videoUrl: null,
+});
+
+const createCropImageNodeData = (): CropImageNodeData => ({
+  label: "Crop Image",
+  imageUrl: null,
+  xPercent: 0,
+  yPercent: 0,
+  widthPercent: 100,
+  heightPercent: 100,
+  outputUrl: null,
+});
+
+const createExtractFrameNodeData = (): ExtractFrameNodeData => ({
+  label: "Extract Frame",
+  videoUrl: null,
+  timestampSeconds: 0,
+  outputUrl: null,
 });
 
 export const useWorkflowStore = create<WorkflowState>((set, get) => ({
@@ -163,7 +195,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   addNode: (type, position) => {
     get().saveHistory();
     const id = generateId();
-    let data: TextNodeData | ImageNodeData | LLMNodeData;
+    let data:
+      | TextNodeData
+      | ImageNodeData
+      | LLMNodeData
+      | VideoNodeData
+      | CropImageNodeData
+      | ExtractFrameNodeData;
 
     switch (type) {
       case "text":
@@ -174,6 +212,15 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         break;
       case "llm":
         data = createLLMNodeData();
+        break;
+      case "video":
+        data = createVideoNodeData();
+        break;
+      case "cropImage":
+        data = createCropImageNodeData();
+        break;
+      case "extractFrame":
+        data = createExtractFrameNodeData();
         break;
     }
 

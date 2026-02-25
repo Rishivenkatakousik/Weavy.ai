@@ -29,15 +29,55 @@ export interface LLMNodeData {
   [key: string]: unknown;
 }
 
+export interface VideoNodeData {
+  label: string;
+  videoUrl: string | null;
+  [key: string]: unknown;
+}
+
+export interface CropImageNodeData {
+  label: string;
+  imageUrl: string | null; // from connection or manual
+  xPercent: number;
+  yPercent: number;
+  widthPercent: number;
+  heightPercent: number;
+  outputUrl: string | null; // cropped result URL
+  [key: string]: unknown;
+}
+
+export interface ExtractFrameNodeData {
+  label: string;
+  videoUrl: string | null; // from connection or manual
+  timestampSeconds: number;
+  outputUrl: string | null; // frame image URL
+  [key: string]: unknown;
+}
+
 // Union type for all node data
-export type WorkflowNodeData = TextNodeData | ImageNodeData | LLMNodeData;
+export type WorkflowNodeData =
+  | TextNodeData
+  | ImageNodeData
+  | LLMNodeData
+  | VideoNodeData
+  | CropImageNodeData
+  | ExtractFrameNodeData;
 
 // Custom node types
 export type TextNode = Node<TextNodeData, "text">;
 export type ImageNode = Node<ImageNodeData, "image">;
 export type LLMNode = Node<LLMNodeData, "llm">;
+export type VideoNode = Node<VideoNodeData, "video">;
+export type CropImageNode = Node<CropImageNodeData, "cropImage">;
+export type ExtractFrameNode = Node<ExtractFrameNodeData, "extractFrame">;
 
-export type WorkflowNode = TextNode | ImageNode | LLMNode;
+export type WorkflowNode =
+  | TextNode
+  | ImageNode
+  | LLMNode
+  | VideoNode
+  | CropImageNode
+  | ExtractFrameNode;
 
 // Workflow state
 export interface Workflow {

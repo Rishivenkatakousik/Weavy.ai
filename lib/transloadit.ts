@@ -47,3 +47,41 @@ export async function uploadImage(base64Data: string): Promise<string> {
     await unlink(tmpPath).catch(() => {});
   }
 }
+
+/** Accept base64 video (data URL or raw), upload via Transloadit, return video URL */
+export async function uploadVideo(base64Data: string): Promise<string> {
+  const base64Match = base64Data.match(/^data:([^;]+);base64,(.+)$/);
+  const mime = base64Match ? base64Match[1] : "video/mp4";
+  const rawBase64 = base64Match ? base64Match[2] : base64Data;
+  const buffer = Buffer.from(rawBase64, "base64");
+
+  const ext = mime.includes("webm") ? "webm" : mime.includes("mov") ? "mov" : "mp4";
+  const tmpPath = join(tmpdir(), `galaxy-video-${randomUUID()}.${ext}`);
+  try {
+    await writeFile(tmpPath, buffer);
+
+    const status = await transloadit.createAssembly({
+      files: { file1: tmpPath },
+      params: {
+        steps: {
+          video: {
+            use: ":original",
+            robot: "/video/encode",
+            result: true,
+            preset: "mp4",
+          },
+        },
+      },
+      waitForCompletion: true,
+    });
+
+    const first = status.results?.video?.[0];
+    const url = first?.ssl_url ?? (first as { url?: string })?.url;
+    if (!url || typeof url !== "string") {
+      throw new Error("Transloadit assembly did not return a video URL");
+    }
+    return url;
+  } finally {
+    await unlink(tmpPath).catch(() => {});
+  }
+}

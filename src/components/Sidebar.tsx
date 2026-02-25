@@ -15,13 +15,16 @@ import {
   Search,
   Grid3X3,
   ArrowLeft,
+  Video,
+  Crop,
+  Film,
 } from "lucide-react";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
 interface SidebarProps {
   onDragStart: (
     event: React.DragEvent,
-    nodeType: "text" | "image" | "llm"
+    nodeType: "text" | "image" | "llm" | "video" | "cropImage" | "extractFrame"
   ) => void;
 }
 
@@ -53,6 +56,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
   const allNodes = [
     { type: "text" as const, label: "Text", icon: Type, colSpan: false },
     { type: "image" as const, label: "Image", icon: ImageIcon, colSpan: false },
+    { type: "video" as const, label: "Video", icon: Video, colSpan: false },
+    { type: "cropImage" as const, label: "Crop Image", icon: Crop, colSpan: false },
+    { type: "extractFrame" as const, label: "Extract Frame", icon: Film, colSpan: false },
     { type: "llm" as const, label: "Run Any LLM", icon: Sparkles, colSpan: true },
   ];
 
