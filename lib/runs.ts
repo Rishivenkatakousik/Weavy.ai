@@ -1,8 +1,58 @@
 import { prisma } from "@/lib/prisma";
 import { tasks } from "@trigger.dev/sdk";
 import type { llmTask } from "@/trigger/llm";
+import type { orchestratorTask } from "@/trigger/orchestrator";
+import { getExecutionPlan } from "@/lib/execution";
+import type { Node, Edge } from "@xyflow/react";
 
 export type RunScope = "full" | "single" | "selected";
+
+/**
+ * Create a workflow run and trigger the orchestrator task (full / single / selected).
+ * Loads workflow nodes/edges, validates plan, creates WorkflowRun, triggers orchestrator.
+ */
+export async function createRunAndTriggerOrchestrator(params: {
+  workflowId: string;
+  userId: string;
+  scope: RunScope;
+  nodeId?: string;
+  selectedNodeIds?: string[];
+}) {
+  const workflow = await prisma.workflow.findFirst({
+    where: { id: params.workflowId, userId: params.userId },
+  });
+  if (!workflow) throw new Error("Workflow not found");
+
+  const nodes = (workflow.nodes as unknown) as Node[];
+  const edges = (workflow.edges as unknown) as Edge[];
+  const plan = getExecutionPlan(nodes, edges, params.scope, {
+    nodeId: params.nodeId,
+    selectedNodeIds: params.selectedNodeIds,
+  });
+  if (!plan.valid) throw new Error(plan.error);
+
+  const run = await prisma.workflowRun.create({
+    data: {
+      workflowId: params.workflowId,
+      userId: params.userId,
+      status: "RUNNING",
+      scope: params.scope,
+    },
+  });
+
+  const handle = await tasks.trigger<typeof orchestratorTask>("workflow-orchestrator", {
+    workflowRunId: run.id,
+    workflowId: params.workflowId,
+    userId: params.userId,
+    nodes,
+    edges,
+    scope: params.scope,
+    nodeId: params.nodeId,
+    selectedNodeIds: params.selectedNodeIds,
+  });
+
+  return { run, triggerHandle: handle };
+}
 
 /**
  * Create a workflow run and a single LLM node execution, then trigger the LLM task.

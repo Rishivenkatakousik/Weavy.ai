@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { createRunAndTriggerLLM, getWorkflowRuns } from "@/lib/runs";
+import { createRunAndTriggerOrchestrator, getWorkflowRuns } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,7 @@ export async function GET(
   }
 }
 
-// POST - Start a run (create WorkflowRun + NodeExecutions and trigger LLM task for one node)
+// POST - Start a run (full / single / selected). Creates WorkflowRun and triggers orchestrator.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -54,35 +54,34 @@ export async function POST(
       return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
     }
 
-    const body = await request.json();
-    const scope = (body.scope as "full" | "single" | "selected") ?? "single";
-    const nodeId = body.nodeId as string;
-    const model = body.model as string;
-    const systemPrompt = body.systemPrompt as string | undefined;
-    const userPrompt = body.userPrompt as string;
-    const images = body.images as string[] | undefined;
+    const body = await request.json().catch(() => ({}));
+    const scope = (body.scope as "full" | "single" | "selected") ?? "full";
+    const nodeId = body.nodeId as string | undefined;
+    const selectedNodeIds = body.selectedNodeIds as string[] | undefined;
 
-    if (!nodeId || !model || typeof userPrompt !== "string") {
+    if (scope === "single" && !nodeId) {
       return NextResponse.json(
-        { error: "nodeId, model, and userPrompt are required" },
+        { error: "nodeId is required when scope is single" },
+        { status: 400 }
+      );
+    }
+    if (scope === "selected" && (!selectedNodeIds || !Array.isArray(selectedNodeIds) || selectedNodeIds.length === 0)) {
+      return NextResponse.json(
+        { error: "selectedNodeIds (non-empty array) is required when scope is selected" },
         { status: 400 }
       );
     }
 
-    const { run, nodeExecution, triggerHandle } = await createRunAndTriggerLLM({
+    const { run, triggerHandle } = await createRunAndTriggerOrchestrator({
       workflowId,
       userId,
       scope,
       nodeId,
-      model,
-      systemPrompt,
-      userPrompt,
-      images,
+      selectedNodeIds,
     });
 
     return NextResponse.json({
       run,
-      nodeExecution,
       triggerRunId: triggerHandle.id,
     });
   } catch (error) {
