@@ -13,6 +13,7 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
   const { updateNodeData, deleteNode } = useWorkflowStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleLabelChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +28,7 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
 
   const uploadVideo = useCallback(
     async (base64: string) => {
+      setUploadError(null);
       setIsUploading(true);
       try {
         const res = await fetch("/api/upload/video", {
@@ -34,12 +36,17 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ video: base64 }),
         });
-        const result = await res.json();
-        if (result.url) {
+        const result = await res.json().catch(() => ({}));
+        if (res.ok && result.url) {
           updateNodeData(id, { videoUrl: result.url });
+        } else {
+          const message =
+            result?.error ??
+            (res.status === 413 ? "Video too large. Try a smaller file." : "Upload failed.");
+          setUploadError(message);
         }
-      } catch {
-        // keep UI in sync on error
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : "Upload failed.");
       } finally {
         setIsUploading(false);
       }
@@ -82,6 +89,7 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
   }, []);
 
   const clearVideo = useCallback(() => {
+    setUploadError(null);
     updateNodeData(id, { videoUrl: null });
   }, [id, updateNodeData]);
 
@@ -144,16 +152,23 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
             </button>
           </div>
         ) : (
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            className="flex h-36 w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-neutral-700 hover:border-neutral-600 hover:bg-neutral-900"
-          >
-            <Upload className="h-6 w-6 text-neutral-500" />
-            <span className="text-xs text-neutral-500">Upload video (mp4, mov, webm, m4v)</span>
+          <div className="flex flex-col gap-2">
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              className="flex h-36 w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-neutral-700 hover:border-neutral-600 hover:bg-neutral-900"
+            >
+              <Upload className="h-6 w-6 text-neutral-500" />
+              <span className="text-xs text-neutral-500">Upload video (mp4, mov, webm, m4v)</span>
+            </div>
+            {uploadError && (
+              <p className="text-xs text-red-400" title={uploadError}>
+                {uploadError}
+              </p>
+            )}
           </div>
         )}
       </div>

@@ -1,12 +1,8 @@
 import { defineConfig } from "@trigger.dev/sdk";
-import { ffmpeg } from "@trigger.dev/build/extensions/core";
 
 export default defineConfig({
-  project: process.env.TRIGGER_PROJECT_REF ?? "proj_galaxy",
+  project: process.env.TRIGGER_PROJECT_REF ?? "proj_pytgxjenhutmugooxcgg",
   dirs: ["./trigger"],
-  build: {
-    extensions: [ffmpeg()],
-  },
   retries: {
     enabledInDev: false,
     default: {

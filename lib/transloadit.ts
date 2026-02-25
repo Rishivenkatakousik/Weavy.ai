@@ -50,6 +50,14 @@ export async function uploadImage(base64Data: string): Promise<string> {
 
 /** Accept base64 video (data URL or raw), upload via Transloadit, return video URL */
 export async function uploadVideo(base64Data: string): Promise<string> {
+  const authKey = process.env.TRANSLOADIT_AUTH_KEY ?? process.env.TRANSLOADIT_KEY;
+  const authSecret =
+    process.env.TRANSLOADIT_AUTH_SECRET ?? process.env.TRANSLOADIT_SECRET;
+  if (!authKey || !authSecret) {
+    throw new Error(
+      "Transloadit credentials missing. Set TRANSLOADIT_AUTH_KEY and TRANSLOADIT_AUTH_SECRET (or TRANSLOADIT_KEY and TRANSLOADIT_SECRET) in .env"
+    );
+  }
   const base64Match = base64Data.match(/^data:([^;]+);base64,(.+)$/);
   const mime = base64Match ? base64Match[1] : "video/mp4";
   const rawBase64 = base64Match ? base64Match[2] : base64Data;
@@ -68,7 +76,8 @@ export async function uploadVideo(base64Data: string): Promise<string> {
             use: ":original",
             robot: "/video/encode",
             result: true,
-            preset: "mp4",
+            preset: "web/mp4/720p",
+            ffmpeg_stack: "v7.0.0",
           },
         },
       },

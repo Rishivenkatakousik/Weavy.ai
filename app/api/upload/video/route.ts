@@ -23,9 +23,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, url });
   } catch (error) {
     console.error("Video upload error:", error);
-    return NextResponse.json(
-      { error: "Failed to upload video" },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof (error as { message?: string })?.message === "string"
+          ? (error as { message: string }).message
+          : "Failed to upload video";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
