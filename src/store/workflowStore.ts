@@ -17,7 +17,7 @@ import {
   ExtractFrameNodeData,
   Workflow,
 } from "@/src/types/workflow";
-import { getImageGenTemplate } from "@/src/templates/imageGenWorkflow";
+import { getProductMarketingKitTemplate } from "@/src/templates/productMarketingKitWorkflow";
 import { isValidNewConnection } from "@/lib/workflowValidation";
 
 interface HistoryState {
@@ -523,10 +523,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   loadSampleWorkflow2: () => {
-    const { nodes, edges } = getImageGenTemplate();
+    const { nodes, edges } = getProductMarketingKitTemplate();
     set({
-      workflowId: "sample_workflow_2",
-      workflowName: "Sample Workflow 2",
+      workflowId: "sample_product_marketing_kit",
+      workflowName: "Product Marketing Kit",
       nodes,
       edges,
       history: [],

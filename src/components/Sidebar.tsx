@@ -18,6 +18,8 @@ import {
   Video,
   Crop,
   Film,
+  Play,
+  Loader2,
 } from "lucide-react";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
@@ -31,15 +33,20 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
   const { user } = useUser();
   const {
+    workflowId,
     workflowName,
     setWorkflowName,
     requestSave,
+    requestHistoryRefresh,
     loadSampleWorkflow,
     loadSampleWorkflow2,
     exportWorkflow,
     importWorkflow,
     createNewWorkflow,
   } = useWorkflowStore();
+
+  const [runLoading, setRunLoading] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
 
   const initial =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() ||
@@ -116,6 +123,32 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
   const handleQuickAccessClick = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
+
+  const handleRunWorkflow = useCallback(async () => {
+    if (!workflowId) {
+      setRunError("Save the workflow first.");
+      return;
+    }
+    setRunError(null);
+    setRunLoading(true);
+    try {
+      const res = await fetch(`/api/workflows/${workflowId}/runs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "full" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setRunError(data.error ?? (res.status === 404 ? "Save the workflow first." : "Failed to start run."));
+        return;
+      }
+      requestHistoryRefresh();
+    } catch (err) {
+      setRunError(err instanceof Error ? err.message : "Failed to start run.");
+    } finally {
+      setRunLoading(false);
+    }
+  }, [workflowId, requestHistoryRefresh]);
 
   return (
     <div className="flex h-full">
@@ -262,7 +295,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
               >
                 <Package className="mb-1 h-5 w-5 text-amber-400 transition-colors" />
                 <span className="text-center text-[10px] text-amber-200 transition-colors">
-                  Sample Workflow 2
+                  Product Marketing Kit
                 </span>
               </button>
             </div>
@@ -270,23 +303,43 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
             <h3 className="mb-3 mt-5 text-[10px] font-medium uppercase tracking-wide text-white/70">
               Actions
             </h3>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={createNewWorkflow}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-neutral-600 bg-transparent px-2 py-2 text-[10px] text-white transition-all hover:bg-neutral-800"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>New</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={requestSave}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-neutral-600 bg-transparent px-2 py-2 text-[10px] text-white transition-all hover:bg-neutral-800"
+                >
+                  <Save className="h-3 w-3" />
+                  <span>Save</span>
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={createNewWorkflow}
-                className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-neutral-600 bg-transparent px-2 py-2 text-[10px] text-white transition-all hover:bg-neutral-800"
+                onClick={handleRunWorkflow}
+                disabled={runLoading || !workflowId}
+                className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-600/20 px-2 py-2.5 text-[10px] font-medium text-emerald-300 transition-all hover:bg-emerald-600/30 disabled:opacity-50 disabled:pointer-events-none"
               >
-                <Plus className="h-3 w-3" />
-                <span>New</span>
+                {runLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Play className="h-3.5 w-3.5" />
+                )}
+                <span>Run workflow</span>
               </button>
-              <button
-                type="button"
-                onClick={requestSave}
-                className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-neutral-600 bg-transparent px-2 py-2 text-[10px] text-white transition-all hover:bg-neutral-800"
-              >
-                <Save className="h-3 w-3" />
-                <span>Save</span>
-              </button>
+              {runError && (
+                <p className="text-[10px] text-red-400" title={runError}>
+                  {runError}
+                </p>
+              )}
             </div>
           </div>
         </div>
