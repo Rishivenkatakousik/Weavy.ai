@@ -21,6 +21,8 @@ import {
   GEMINI_MODELS,
 } from "@/src/types/workflow";
 import { useWorkflowStore } from "@/src/store/workflowStore";
+import { validateDAG } from "@/lib/workflowValidation";
+import { validateDAG } from "@/lib/workflowValidation";
 
 const urlToBase64 = async (url: string): Promise<string | null> => {
   try {
@@ -143,6 +145,11 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
   }, [id, nodes, edges]);
 
   const handleRun = useCallback(async () => {
+    const dagResult = validateDAG(nodes, edges);
+    if (!dagResult.valid) {
+      updateNodeData(id, { error: dagResult.error });
+      return;
+    }
     updateNodeData(id, {
       isLoading: true,
       error: null,
@@ -193,7 +200,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         isLoading: false,
       });
     }
-  }, [id, nodeData, updateNodeData, collectInputs]);
+  }, [id, nodeData, nodes, edges, updateNodeData, collectInputs]);
 
   const showLabels = isHovered;
 
@@ -363,15 +370,26 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         </div>
       </div>
 
-      <div className="px-4 pt-4">
+      <div
+        className={`px-4 pt-4 ${connectedHandles.includes("prompt") ? "opacity-95" : ""}`}
+      >
         <textarea
           value={nodeData.systemPrompt || ""}
           onChange={(e) =>
             updateNodeData(id, { systemPrompt: e.target.value })
           }
-          placeholder="Enter system prompt or instructions..."
+          placeholder={
+            connectedHandles.includes("prompt")
+              ? "System prompt (optional). User message from connected node."
+              : "Enter system prompt or instructions..."
+          }
           className="h-16 w-full resize-none rounded-lg border border-neutral-600 bg-neutral-900 p-3 text-sm font-normal text-neutral-300 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none"
         />
+        {connectedHandles.includes("prompt") && (
+          <p className="mt-1 text-[10px] text-neutral-500">
+            Prompt input connected — user message from upstream
+          </p>
+        )}
       </div>
 
       <div className="p-4">
