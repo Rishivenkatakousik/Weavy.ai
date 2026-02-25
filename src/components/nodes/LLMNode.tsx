@@ -38,14 +38,18 @@ const urlToBase64 = async (url: string): Promise<string | null> => {
   }
 };
 
+const POLL_INTERVAL_MS = 1500;
+
 const LLMNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as LLMNodeData;
   const {
+    workflowId,
     updateNodeData,
     deleteNode,
     deleteEdgeByHandle,
     nodes,
     edges,
+    requestHistoryRefresh,
   } = useWorkflowStore();
   const imageInputCount = (nodeData.imageInputCount as number) || 1;
   const [showMenu, setShowMenu] = useState(false);
@@ -149,6 +153,12 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
       updateNodeData(id, { error: dagResult.error });
       return;
     }
+    if (!workflowId) {
+      updateNodeData(id, {
+        error: "Save the workflow first before running.",
+      });
+      return;
+    }
     updateNodeData(id, {
       isLoading: true,
       error: null,
@@ -168,10 +178,11 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         return;
       }
 
-      const response = await fetch("/api/gemini", {
+      const startRes = await fetch(`/api/workflows/${workflowId}/runs/llm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          nodeId: id,
           model: nodeData.model || "gemini-2.0-flash",
           systemPrompt: nodeData.systemPrompt || undefined,
           userPrompt: fullUserPrompt,
@@ -179,27 +190,69 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         }),
       });
 
-      const result = await response.json();
-
-      if (result.success) {
+      const startData = await startRes.json();
+      if (!startRes.ok) {
         updateNodeData(id, {
-          response: result.content,
-          generatedImage: result.image || null,
+          error: startData.error ?? "Failed to start run",
           isLoading: false,
         });
-      } else {
-        updateNodeData(id, {
-          error: result.error,
-          isLoading: false,
-        });
+        return;
       }
+
+      const { runId, nodeExecutionId } = startData;
+      let done = false;
+      while (!done) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+        const runRes = await fetch(
+          `/api/workflows/${workflowId}/runs/${runId}`
+        );
+        if (!runRes.ok) {
+          updateNodeData(id, {
+            error: "Failed to fetch run status",
+            isLoading: false,
+          });
+          return;
+        }
+        const { run } = await runRes.json();
+        const exec = run?.nodeExecutions?.find(
+          (e: { id: string }) => e.id === nodeExecutionId
+        );
+        if (exec?.status === "SUCCESS") {
+          const outputs = (exec.outputs ?? {}) as {
+            content?: string;
+            generatedImage?: string;
+          };
+          updateNodeData(id, {
+            response: outputs.content ?? null,
+            generatedImage: outputs.generatedImage ?? null,
+            isLoading: false,
+          });
+          done = true;
+        } else if (exec?.status === "FAILED") {
+          updateNodeData(id, {
+            error: exec.errorMessage ?? "Run failed",
+            isLoading: false,
+          });
+          done = true;
+        }
+      }
+      requestHistoryRefresh();
     } catch (error) {
       updateNodeData(id, {
         error: error instanceof Error ? error.message : "An error occurred",
         isLoading: false,
       });
     }
-  }, [id, nodeData, nodes, edges, updateNodeData, collectInputs]);
+  }, [
+    id,
+    nodeData,
+    nodes,
+    edges,
+    workflowId,
+    updateNodeData,
+    collectInputs,
+    requestHistoryRefresh,
+  ]);
 
   const showLabels = isHovered;
 
