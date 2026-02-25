@@ -120,7 +120,9 @@ const CropImageNode = memo(({ id, data, selected }: NodeProps) => {
             />
           </div>
         )}
-        {!hasImageInput && (
+        {hasImageInput ? (
+          <p className="text-[10px] text-neutral-500">Image input connected</p>
+        ) : (
           <p className="text-[10px] text-neutral-500">Connect an image source to crop.</p>
         )}
       </div>

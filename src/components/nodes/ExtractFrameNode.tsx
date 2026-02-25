@@ -73,7 +73,9 @@ const ExtractFrameNode = memo(({ id, data, selected }: NodeProps) => {
             />
           </div>
         )}
-        {!hasVideoInput && (
+        {hasVideoInput ? (
+          <p className="text-[10px] text-neutral-500">Video input connected</p>
+        ) : (
           <p className="text-[10px] text-neutral-500">Connect a video source to extract a frame.</p>
         )}
       </div>

@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { useWorkflowStore } from "@/src/store/workflowStore";
+import { isValidNewConnection } from "@/lib/workflowValidation";
 import TextNode from "./nodes/TextNode";
 import ImageNode from "./nodes/ImageNode";
 import LLMNode from "./nodes/LLMNode";
@@ -71,10 +72,11 @@ const CanvasInner: React.FC<CanvasProps> = ({ onDragOver, onDrop }) => {
 
   const onReconnect = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
+      if (!isValidNewConnection(newConnection, nodes, edges)) return;
       edgeReconnectSuccessful.current = true;
       setEdges(reconnectEdge(oldEdge, newConnection, edges));
     },
-    [edges, setEdges]
+    [nodes, edges, setEdges]
   );
 
   const onReconnectEnd = useCallback(
@@ -85,6 +87,11 @@ const CanvasInner: React.FC<CanvasProps> = ({ onDragOver, onDrop }) => {
       edgeReconnectSuccessful.current = true;
     },
     [edges, setEdges]
+  );
+
+  const isValidConnection = useCallback(
+    (connection: Connection) => isValidNewConnection(connection, nodes, edges),
+    [nodes, edges]
   );
 
   const handleKeyDown = useCallback(
@@ -118,6 +125,7 @@ const CanvasInner: React.FC<CanvasProps> = ({ onDragOver, onDrop }) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        isValidConnection={isValidConnection}
         onReconnect={onReconnect}
         onReconnectStart={onReconnectStart}
         onReconnectEnd={onReconnectEnd}

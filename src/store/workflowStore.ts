@@ -18,6 +18,7 @@ import {
   Workflow,
 } from "@/src/types/workflow";
 import { getImageGenTemplate } from "@/src/templates/imageGenWorkflow";
+import { isValidNewConnection } from "@/lib/workflowValidation";
 
 interface HistoryState {
   nodes: WorkflowNode[];
@@ -167,19 +168,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     );
     if (existingConnection) return;
 
-    if (targetHandle && targetHandle.startsWith("image-")) {
-      const sourceNode = nodes.find((n) => n.id === connection.source);
-      const sourceHandle = connection.sourceHandle;
-      const isValidImageSource =
-        sourceNode?.type === "image" ||
-        (sourceNode?.type === "llm" && sourceHandle === "image-output");
-      if (!isValidImageSource) return;
-    }
-
-    if (targetHandle === "prompt") {
-      const sourceNode = nodes.find((n) => n.id === connection.source);
-      if (sourceNode?.type === "image") return;
-    }
+    if (!isValidNewConnection(connection, nodes, edges)) return;
 
     const newEdge = {
       ...connection,
