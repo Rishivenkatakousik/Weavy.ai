@@ -4,6 +4,7 @@ import React, { useCallback, useRef } from "react";
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
 import Sidebar from "@/src/components/Sidebar";
 import Canvas from "@/src/components/Canvas";
+import HistorySidebar from "@/src/components/HistorySidebar";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
 function WorkflowBuilderInner() {
@@ -63,6 +64,8 @@ function WorkflowBuilderInner() {
           <Canvas onDragOver={onDragOver} onDrop={onDrop} />
         </div>
       </div>
+
+      <HistorySidebar />
     </div>
   );
 }
