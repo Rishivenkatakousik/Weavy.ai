@@ -22,7 +22,6 @@ import {
 } from "@/src/types/workflow";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 import { validateDAG } from "@/lib/workflowValidation";
-import { validateDAG } from "@/lib/workflowValidation";
 
 const urlToBase64 = async (url: string): Promise<string | null> => {
   try {

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { History, ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import {
+  History,
+  ChevronDown,
+  ChevronRight,
+  ChevronLeft,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
 type RunStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "PARTIAL";
@@ -118,11 +125,13 @@ function RunListItem({
             {formatTime(run.startedAt)}
           </div>
           <div className="flex items-center gap-2 text-[10px] text-neutral-400">
-            <span>{formatDuration(run.durationMs)}</span>
+            <span title="Duration">{formatDuration(run.durationMs)}</span>
             {run.scope && (
               <>
                 <span>·</span>
-                <span className="capitalize">{run.scope}</span>
+                <span className="capitalize" title="Execution scope">
+                  {run.scope}
+                </span>
               </>
             )}
           </div>
@@ -142,7 +151,10 @@ function RunListItem({
                     <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
                       Node {ne.nodeId}
                     </span>
-                    <span className="text-[10px] text-neutral-500">
+                    <span
+                      className="text-[10px] text-neutral-500"
+                      title="Execution time"
+                    >
                       {formatDuration(ne.durationMs)}
                     </span>
                   </div>
@@ -194,7 +206,7 @@ function RunListItem({
 }
 
 export default function HistorySidebar() {
-  const { workflowId } = useWorkflowStore();
+  const { workflowId, historyRefreshTrigger } = useWorkflowStore();
   const [runs, setRuns] = useState<WorkflowRunListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
@@ -202,9 +214,9 @@ export default function HistorySidebar() {
     Record<string, WorkflowRunListItem>
   >({});
 
-  const fetchRuns = useCallback(async () => {
+  const fetchRuns = useCallback(async (silent = false) => {
     if (!workflowId) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const res = await fetch(`/api/workflows/${workflowId}/runs`);
       if (res.ok) {
@@ -214,7 +226,7 @@ export default function HistorySidebar() {
     } catch (err) {
       console.error("Failed to fetch runs:", err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [workflowId]);
 
@@ -252,65 +264,125 @@ export default function HistorySidebar() {
     fetchRuns();
   }, [fetchRuns]);
 
+  // Refetch when a run is started from elsewhere (e.g. Run workflow button)
+  useEffect(() => {
+    if (historyRefreshTrigger > 0 && workflowId) fetchRuns(true);
+  }, [historyRefreshTrigger, workflowId, fetchRuns]);
+
+  // Poll when there are RUNNING or PENDING runs so status indicators update (Phase 10.3)
+  const hasActiveRuns = runs.some(
+    (r) => r.status === "RUNNING" || r.status === "PENDING"
+  );
+  useEffect(() => {
+    if (!workflowId || !hasActiveRuns) return;
+    const interval = setInterval(() => fetchRuns(true), 3000);
+    return () => clearInterval(interval);
+  }, [workflowId, hasActiveRuns, fetchRuns]);
+
   const handleToggle = useCallback((id: string) => {
     setExpandedRunId((current) => (current === id ? null : id));
   }, []);
 
+  const [isExpanded, setIsExpanded] = useState(true);
+  const HISTORY_PANEL_WIDTH = 280;
+
   if (!workflowId) {
     return (
-      <div className="flex h-full w-64 shrink-0 flex-col border-l border-neutral-700 bg-neutral-900">
-        <div className="border-b border-neutral-700 px-3 py-3">
-          <h3 className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-            <History className="h-3.5 w-3.5" />
-            Run history
-          </h3>
-        </div>
-        <div className="flex flex-1 items-center justify-center p-4 text-center text-xs text-neutral-500">
-          Save the workflow to see run history.
+      <div className="flex h-full shrink-0 flex-col border-l border-neutral-700 bg-neutral-900">
+        <div
+          className="flex flex-col border-neutral-700"
+          style={{ width: isExpanded ? HISTORY_PANEL_WIDTH : 48 }}
+        >
+          <div className="flex h-12 items-center border-b border-neutral-700 px-2">
+            <button
+              type="button"
+              onClick={() => setIsExpanded((e) => !e)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white"
+              title={isExpanded ? "Collapse history" : "Expand history"}
+            >
+              {isExpanded ? (
+                <ChevronLeft className="h-4 w-4" />
+              ) : (
+                <History className="h-4 w-4" />
+              )}
+            </button>
+            {isExpanded && (
+              <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+                Run history
+              </span>
+            )}
+          </div>
+          {isExpanded && (
+            <div className="flex flex-1 items-center justify-center p-4 text-center text-xs text-neutral-500">
+              Save the workflow to see run history.
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full w-64 shrink-0 flex-col border-l border-neutral-700 bg-neutral-900">
-      <div className="flex items-center justify-between border-b border-neutral-700 px-3 py-3">
-        <h3 className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-          <History className="h-3.5 w-3.5" />
-          Run history
-        </h3>
-        <button
-          type="button"
-          onClick={fetchRuns}
-          disabled={loading}
-          className="rounded p-1 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white disabled:opacity-50"
-          title="Refresh"
-        >
-          <RefreshCw
-            className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
-          />
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {loading && runs.length === 0 ? (
-          <div className="flex items-center justify-center gap-2 py-8 text-xs text-neutral-500">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading…
+    <div className="flex h-full shrink-0 flex-col border-l border-neutral-700 bg-neutral-900">
+      <div
+        className="flex min-h-0 flex-1 flex-col transition-[width] duration-200 ease-out"
+        style={{ width: isExpanded ? HISTORY_PANEL_WIDTH : 48 }}
+      >
+        <div className="flex h-12 min-h-12 shrink-0 items-center justify-between border-b border-neutral-700 px-2">
+          <button
+            type="button"
+            onClick={() => setIsExpanded((e) => !e)}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white"
+            title={isExpanded ? "Collapse history" : "Expand history"}
+          >
+            {isExpanded ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <History className="h-4 w-4" />
+            )}
+          </button>
+          {isExpanded && (
+            <>
+              <h3 className="flex flex-1 items-center gap-2 truncate pl-1 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+                Run history
+              </h3>
+              <button
+                type="button"
+                onClick={() => fetchRuns()}
+                disabled={loading}
+                className="rounded p-1 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white disabled:opacity-50"
+                title="Refresh"
+              >
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+                />
+              </button>
+            </>
+          )}
+        </div>
+        {isExpanded && (
+          <div className="flex-1 overflow-y-auto">
+            {loading && runs.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 py-8 text-xs text-neutral-500">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading…
+              </div>
+            ) : runs.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center p-4 text-center text-xs text-neutral-500">
+                No runs yet. Run the workflow to see history here.
+              </div>
+            ) : (
+              runs.map((run) => (
+                <RunListItem
+                  key={run.id}
+                  run={run}
+                  expandedRunId={expandedRunId}
+                  onToggle={handleToggle}
+                  onFetchDetails={fetchRunDetails}
+                />
+              ))
+            )}
           </div>
-        ) : runs.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center p-4 text-center text-xs text-neutral-500">
-            No runs yet. Start a run from an LLM node.
-          </div>
-        ) : (
-          runs.map((run) => (
-            <RunListItem
-              key={run.id}
-              run={run}
-              expandedRunId={expandedRunId}
-              onToggle={handleToggle}
-              onFetchDetails={fetchRunDetails}
-            />
-          ))
         )}
       </div>
     </div>

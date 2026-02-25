@@ -75,6 +75,10 @@ interface WorkflowState {
   // Triggers editor page to save; persistence is done by the editor page via API
   requestSaveTrigger: number;
   requestSave: () => void;
+
+  // Triggers history sidebar to refetch runs (e.g. after starting a workflow run)
+  historyRefreshTrigger: number;
+  requestHistoryRefresh: () => void;
   saveWorkflow: () => void;
   loadWorkflow: (_id: string) => void;
   getWorkflowList: () => Workflow[];
@@ -302,6 +306,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   requestSaveTrigger: 0,
   requestSave: () =>
     set((s) => ({ requestSaveTrigger: s.requestSaveTrigger + 1 })),
+  historyRefreshTrigger: 0,
+  requestHistoryRefresh: () =>
+    set((s) => ({ historyRefreshTrigger: s.historyRefreshTrigger + 1 })),
   saveWorkflow: () => {
     // No-op: editor page performs PUT when requestSaveTrigger changes or on debounce
   },
