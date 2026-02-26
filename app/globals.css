@@ -25,3 +25,44 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom scrollbars – slim, rounded, dark-theme (html/body + all descendants) */
+.scrollbar-app {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgb(82 82 82) transparent !important;
+}
+
+.scrollbar-app::-webkit-scrollbar,
+.scrollbar-app *::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.scrollbar-app::-webkit-scrollbar-track,
+.scrollbar-app *::-webkit-scrollbar-track {
+  background: transparent !important;
+  border-radius: 4px;
+}
+
+.scrollbar-app::-webkit-scrollbar-thumb,
+.scrollbar-app *::-webkit-scrollbar-thumb {
+  background: rgb(82 82 82) !important;
+  border-radius: 4px !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+}
+
+.scrollbar-app::-webkit-scrollbar-thumb:hover,
+.scrollbar-app *::-webkit-scrollbar-thumb:hover {
+  background: rgb(115 115 115) !important;
+}
+
+.scrollbar-app::-webkit-scrollbar-thumb:active,
+.scrollbar-app *::-webkit-scrollbar-thumb:active {
+  background: rgb(163 163 163) !important;
+}
+
+.scrollbar-app::-webkit-scrollbar-corner,
+.scrollbar-app *::-webkit-scrollbar-corner {
+  background: transparent !important;
+}

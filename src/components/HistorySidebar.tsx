@@ -167,7 +167,7 @@ function RunListItem({
                       <div className="text-[10px] font-medium text-neutral-500">
                         Inputs
                       </div>
-                      <pre className="mt-0.5 max-h-24 overflow-auto rounded bg-neutral-900 p-1.5 text-[10px] text-neutral-300">
+                      <pre className="mt-0.5 max-h-24 overflow-auto overflow-x-auto rounded bg-neutral-900 p-1.5 text-[10px] text-neutral-300">
                         {JSON.stringify(ne.inputs, null, 2)}
                       </pre>
                     </div>
@@ -177,8 +177,8 @@ function RunListItem({
                       <div className="text-[10px] font-medium text-neutral-500">
                         Outputs
                       </div>
-                      <pre className="mt-0.5 max-h-32 overflow-auto rounded bg-neutral-900 p-1.5 text-[10px] text-neutral-300">
-                        {typeof ne.outputs.content === "string"
+<pre className="mt-0.5 max-h-32 overflow-auto overflow-x-auto rounded bg-neutral-900 p-1.5 text-[10px] text-neutral-300">
+                          {typeof ne.outputs.content === "string"
                           ? ne.outputs.content
                           : JSON.stringify(ne.outputs, null, 2)}
                       </pre>

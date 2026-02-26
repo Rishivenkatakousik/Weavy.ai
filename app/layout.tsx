@@ -31,9 +31,9 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className="scrollbar-app">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} ${dmSans.variable} antialiased`}
+          className={`scrollbar-app ${geistSans.variable} ${geistMono.variable} ${dmSans.variable} antialiased`}
         >
           {children}
         </body>
