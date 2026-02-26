@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   History,
   ChevronDown,
@@ -10,6 +10,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useWorkflowStore } from "@/src/store/workflowStore";
+
+const MIN_PANEL_WIDTH = 200;
+const MAX_PANEL_WIDTH = 600;
+const DEFAULT_PANEL_WIDTH = 280;
 
 type RunStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "PARTIAL";
 type NodeStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED";
@@ -284,14 +288,47 @@ export default function HistorySidebar() {
   }, []);
 
   const [isExpanded, setIsExpanded] = useState(true);
-  const HISTORY_PANEL_WIDTH = 280;
+  const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartRef = useRef({ x: 0, width: 0 });
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    resizeStartRef.current = { x: e.clientX, width: panelWidth };
+  }, [panelWidth]);
+
+  useEffect(() => {
+    if (!isResizing) return;
+    const onMove = (e: MouseEvent) => {
+      const { x, width } = resizeStartRef.current;
+      const delta = x - e.clientX;
+      const next = Math.min(
+        MAX_PANEL_WIDTH,
+        Math.max(MIN_PANEL_WIDTH, width + delta)
+      );
+      setPanelWidth(next);
+      resizeStartRef.current = { x: e.clientX, width: next };
+    };
+    const onUp = () => setIsResizing(false);
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    return () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizing]);
 
   if (!workflowId) {
     return (
       <div className="flex h-full shrink-0 flex-col border-l border-neutral-700 bg-neutral-900">
         <div
           className="flex flex-col border-neutral-700"
-          style={{ width: isExpanded ? HISTORY_PANEL_WIDTH : 48 }}
+          style={{ width: isExpanded ? panelWidth : 48 }}
         >
           <div className="flex h-12 items-center border-b border-neutral-700 px-2">
             <button
@@ -325,9 +362,22 @@ export default function HistorySidebar() {
   return (
     <div className="flex h-full shrink-0 flex-col border-l border-neutral-700 bg-neutral-900">
       <div
-        className="flex min-h-0 flex-1 flex-col transition-[width] duration-200 ease-out"
-        style={{ width: isExpanded ? HISTORY_PANEL_WIDTH : 48 }}
+        className="relative flex min-h-0 flex-1 flex-col"
+        style={{
+          width: isExpanded ? panelWidth : 48,
+          transition: isResizing ? "none" : "width 0.2s ease-out",
+        }}
       >
+        {isExpanded && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-valuenow={panelWidth}
+            onMouseDown={handleResizeStart}
+            className="absolute left-0 top-0 z-10 h-full w-1.5 cursor-col-resize touch-none border-l border-transparent hover:border-neutral-600 hover:bg-neutral-700/30 active:bg-neutral-600/50"
+            title="Drag to resize"
+          />
+        )}
         <div className="flex h-12 min-h-12 shrink-0 items-center justify-between border-b border-neutral-700 px-2">
           <button
             type="button"
