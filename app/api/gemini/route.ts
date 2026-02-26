@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { generateContentGemini } from "@/lib/gemini";
-import { generateContentOpenRouter, generateImageOpenRouter } from "@/lib/openrouter";
 
 const llmRequestSchema = z.object({
   model: z.string().min(1, "Model is required"),
@@ -36,38 +35,27 @@ export async function POST(request: NextRequest) {
 
     const { model, systemPrompt, userPrompt, images } = parsed.data;
 
-    const useOpenRouter = !!process.env.OPENROUTER_API_KEY;
-    const useGemini =
-      !!process.env.GEMINI_API_KEY || !!process.env.GOOGLE_API_KEY;
-
-    if (!useOpenRouter && !useGemini) {
+    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Configure OPENROUTER_API_KEY (openrouter.ai) or GEMINI_API_KEY (Google AI Studio) in .env.local.",
+          error: "Configure GEMINI_API_KEY (or GOOGLE_API_KEY) in .env.local.",
         },
         { status: 500 }
       );
     }
 
-    const content = useOpenRouter
-      ? await generateContentOpenRouter(model, systemPrompt, userPrompt, images)
-      : await generateContentGemini(model, systemPrompt, userPrompt, images);
-
-    let image: string | null = null;
-    if (useOpenRouter && userPrompt?.trim()) {
-      try {
-        image = await generateImageOpenRouter(userPrompt, systemPrompt, images);
-      } catch (imgErr) {
-        console.error("OpenRouter image generation failed (text still returned):", imgErr);
-      }
-    }
+    const content = await generateContentGemini(
+      model,
+      systemPrompt,
+      userPrompt,
+      images
+    );
 
     return NextResponse.json({
       success: true,
       content: content || null,
-      image,
+      image: null,
     });
   } catch (error) {
     console.error("Gemini API error:", error);

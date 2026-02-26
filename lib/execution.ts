@@ -160,7 +160,7 @@ export function resolveInputsForNode(
 
     const systemPrompt = (data.systemPrompt as string) ?? "";
     const userPrompt = promptParts.join("\n\n") || (data.userPrompt as string) || "";
-    const model = (data.model as string) ?? "gemini-2.0-flash";
+    const model = (data.model as string) ?? "gemini-2.5-flash";
 
     return {
       model,

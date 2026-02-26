@@ -50,7 +50,7 @@ export function getImageGenTemplate(): {
       position: { x: 500, y: 180 },
       data: {
         label: "Image generator",
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         systemPrompt:
           "You receive two images and a text prompt. Use the prompt and images to produce a single, coherent output. When asked to generate or describe an image, respond with the requested content.",
         userPrompt: "",

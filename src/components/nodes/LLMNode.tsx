@@ -183,7 +183,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nodeId: id,
-          model: nodeData.model || "gemini-2.0-flash",
+          model: nodeData.model || "gemini-2.5-flash",
           systemPrompt: nodeData.systemPrompt || undefined,
           userPrompt: fullUserPrompt,
           images: images.length > 0 ? images : undefined,
@@ -384,7 +384,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
           />
           <div className="relative">
             <select
-              value={nodeData.model || "gemini-2.0-flash"}
+              value={nodeData.model || "gemini-2.5-flash"}
               onChange={(e) => updateNodeData(id, { model: e.target.value })}
               className="cursor-pointer appearance-none rounded border border-neutral-600 bg-neutral-900 px-2 py-1 pr-6 text-xs text-neutral-300 focus:border-neutral-500 focus:outline-none hover:border-neutral-500"
             >

@@ -84,7 +84,7 @@ export const orchestratorTask = task({
         const inputs = resolveInputsForNode(nid, nodes, edges, executionOutputs);
 
         if (node.type === "llm") {
-          const model = (inputs.model as string) ?? "gemini-2.0-flash";
+          const model = (inputs.model as string) ?? "gemini-2.5-flash";
           const systemPrompt = inputs.systemPrompt as string | undefined;
           const userPrompt = (inputs.userPrompt as string) ?? "";
           const images = inputs.images as string[] | undefined;

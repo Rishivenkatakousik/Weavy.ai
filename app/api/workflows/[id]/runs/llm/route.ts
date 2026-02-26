@@ -30,7 +30,7 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
     const nodeId = body.nodeId as string | undefined;
-    const model = (body.model as string) ?? "gemini-2.0-flash";
+    const model = (body.model as string) ?? "gemini-2.5-flash";
     const systemPrompt = body.systemPrompt as string | undefined;
     const userPrompt = body.userPrompt as string | undefined;
     const images = Array.isArray(body.images) ? (body.images as string[]) : undefined;

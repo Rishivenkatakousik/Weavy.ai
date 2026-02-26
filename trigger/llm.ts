@@ -2,7 +2,6 @@ import { task, logger } from "@trigger.dev/sdk";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { generateContentGemini } from "../lib/gemini";
-import { generateContentOpenRouter } from "../lib/openrouter";
 
 function getPrisma() {
   const url = process.env.DATABASE_URL;
@@ -31,20 +30,12 @@ export const llmTask = task({
         data: { status: "RUNNING" },
       });
 
-      const useOpenRouter = !!process.env.OPENROUTER_API_KEY;
-      const content = useOpenRouter
-        ? await generateContentOpenRouter(
-            model,
-            systemPrompt ?? undefined,
-            userPrompt,
-            images
-          )
-        : await generateContentGemini(
-            model,
-            systemPrompt ?? undefined,
-            userPrompt,
-            images
-          );
+      const content = await generateContentGemini(
+        model,
+        systemPrompt ?? undefined,
+        userPrompt,
+        images
+      );
 
       const finishedAt = Date.now();
       const durationMs = finishedAt - startedAt;

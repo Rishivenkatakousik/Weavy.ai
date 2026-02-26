@@ -61,7 +61,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
     position: { x: 320, y: 280 },
     data: {
       label: "Brand Summary",
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       systemPrompt: "",
       userPrompt: "Summarize the product and brand.",
       response: null,
@@ -99,7 +99,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
     position: { x: 620, y: 280 },
     data: {
       label: "Marketing Tweet",
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       systemPrompt:
         "You are a social media copywriter. Write a single engaging marketing tweet (under 280 chars) for this product. Use the brand summary and reference the visuals (cropped hero image and key frame from video).",
       userPrompt:

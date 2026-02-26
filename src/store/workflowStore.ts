@@ -106,7 +106,7 @@ const createImageNodeData = (): ImageNodeData => ({
 
 const createLLMNodeData = (): LLMNodeData => ({
   label: "LLM",
-  model: "gemini-2.0-flash",
+  model: "gemini-2.5-flash",
   systemPrompt: "",
   userPrompt: "",
   response: null,
@@ -350,7 +350,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 380, y: 80 },
         data: {
           label: "Brand Strategist AI",
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
           systemPrompt:
             "You are a brand strategist. Analyze the product (image and description) and output a structured brand foundation. Include: 1) Brand name ideas, 2) Target audience, 3) Unique selling proposition, 4) Brand personality, 5) Tone of voice, 6) Key benefits, 7) Marketing angles. Be concise and structured so other specialists can use this brief.",
           userPrompt: "Analyze this product and output the structured brand foundation above.",
@@ -367,7 +367,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 880, y: 50 },
         data: {
           label: "Social Media Manager",
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
           systemPrompt:
             "You are a social media manager. Given the brand strategy brief, produce on-brand social content.",
           userPrompt:
@@ -384,7 +384,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 960, y: 360 },
         data: {
           label: "Performance Ads Copywriter",
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
           systemPrompt:
             "You are a performance ads copywriter. Given the brand strategy brief, produce paid ad copy.",
           userPrompt:
@@ -401,7 +401,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 940, y: 970 },
         data: {
           label: "Landing Page Copywriter",
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
           systemPrompt:
             "You are a landing page and conversion copywriter. Given the brand strategy brief, produce conversion-focused landing page copy.",
           userPrompt:
@@ -418,7 +418,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 1000, y: 1280 },
         data: {
           label: "Email Marketing",
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
           systemPrompt:
             "You are an email and lifecycle marketer. Given the brand strategy brief, produce launch and promo email copy.",
           userPrompt:
@@ -435,7 +435,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         position: { x: 840, y: 670 },
         data: {
           label: "Video Script Generator",
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
           systemPrompt:
             "You are a video ad scriptwriter. Given the brand strategy brief, produce a 30-second ad script with Hook, Problem, Solution, CTA.",
           userPrompt:
