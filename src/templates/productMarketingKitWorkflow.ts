@@ -16,7 +16,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
     position: { x: 40, y: 40 },
     data: {
       label: "Product Image",
-      imageUrl: null,
+      imageUrl: "https://pub-e8fef8c0e03b44acb340577811800829.r2.dev/b6e9c3d3d2c241ccafdb83f9928274c7/5298c901b3b8449ebd3b2472c192d62a/7664928808cf427cbbd794aa65e5db0c.mp4",
       imageBase64: null,
     },
   },
@@ -78,7 +78,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
     position: { x: 40, y: 540 },
     data: {
       label: "Product Video",
-      videoUrl: null,
+      videoUrl: "https://pub-e8fef8c0e03b44acb340577811800829.r2.dev/b6e9c3d3d2c241ccafdb83f9928274c7/5298c901b3b8449ebd3b2472c192d62a/7664928808cf427cbbd794aa65e5db0c.mp4",
     },
   },
   {
