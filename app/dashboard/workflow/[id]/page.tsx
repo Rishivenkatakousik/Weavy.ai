@@ -77,16 +77,7 @@ export default function WorkflowEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const saveWorkflow = useCallback(async () => {
-    if (
-      !workflowId ||
-      isSaving ||
-      !hasLoadedRef.current ||
-      loadedWorkflowIdRef.current !== workflowId
-    )
-      return;
-
-    const timeSinceLoad = Date.now() - lastLoadTimeRef.current;
-    if (timeSinceLoad < 3000) return;
+    if (!workflowId || isSaving) return;
 
     const isAnyNodeLoading = nodes.some(
       (node) =>
@@ -130,23 +121,76 @@ export default function WorkflowEditorPage() {
       return node;
     });
 
+    const payload = {
+      name: workflowName,
+      nodes: sanitizedNodes,
+      edges,
+    };
+
+    const isVirtualId =
+      workflowId.startsWith("sample_") || workflowId.startsWith("workflow_");
+    const isLoadedMatch =
+      hasLoadedRef.current && loadedWorkflowIdRef.current === workflowId;
+
+    if (isVirtualId || !isLoadedMatch) {
+      setIsSaving(true);
+      try {
+        const res = await fetch("/api/workflows", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Failed to create workflow");
+        const data = await res.json();
+        const newId = data.workflow?.id;
+        if (newId) {
+          setWorkflowId(newId);
+          hasLoadedRef.current = true;
+          loadedWorkflowIdRef.current = newId;
+          lastLoadTimeRef.current = Date.now();
+          router.replace(`/dashboard/workflow/${newId}`);
+        }
+      } catch (error) {
+        console.error("Failed to save workflow:", error);
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
+    const timeSinceLoad = Date.now() - lastLoadTimeRef.current;
+    if (timeSinceLoad < 3000) return;
+
     setIsSaving(true);
     try {
-      await fetch(`/api/workflows/${workflowId}`, {
+      const res = await fetch(`/api/workflows/${workflowId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: workflowName,
-          nodes: sanitizedNodes,
-          edges,
-        }),
+        body: JSON.stringify(payload),
       });
+      if (res.status === 404) {
+        const createRes = await fetch("/api/workflows", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (createRes.ok) {
+          const data = await createRes.json();
+          const newId = data.workflow?.id;
+          if (newId) {
+            setWorkflowId(newId);
+            loadedWorkflowIdRef.current = newId;
+            lastLoadTimeRef.current = Date.now();
+            router.replace(`/dashboard/workflow/${newId}`);
+          }
+        }
+      }
     } catch (error) {
       console.error("Failed to save workflow:", error);
     } finally {
       setIsSaving(false);
     }
-  }, [workflowId, workflowName, nodes, edges, isSaving]);
+  }, [workflowId, workflowName, nodes, edges, isSaving, router, setWorkflowId]);
 
   useEffect(() => {
     if (!isLoading && workflowId) {

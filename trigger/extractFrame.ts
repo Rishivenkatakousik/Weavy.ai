@@ -57,6 +57,13 @@ export const extractFrameTask = task({
         ],
         { stdio: "pipe", encoding: "utf8" }
       );
+
+      const spawnErr = result.error as NodeJS.ErrnoException | undefined;
+      if (spawnErr?.code === "ENOENT") {
+        throw new Error(
+          "ffmpeg not found. Install ffmpeg and add it to PATH, or set FFMPEG_PATH in .env to the full path (e.g. on Windows: C:\\ffmpeg\\bin\\ffmpeg.exe)."
+        );
+      }
       if (result.status !== 0) {
         throw new Error(result.stderr || result.error?.message || "FFmpeg failed");
       }

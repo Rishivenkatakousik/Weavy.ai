@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   Type,
@@ -31,10 +32,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
+  const router = useRouter();
   const { user } = useUser();
   const {
     workflowId,
     workflowName,
+    nodes,
+    edges,
+    setWorkflowId,
     setWorkflowName,
     requestSave,
     requestHistoryRefresh,
@@ -132,14 +137,50 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     setRunError(null);
     setRunLoading(true);
     try {
-      const res = await fetch(`/api/workflows/${workflowId}/runs`, {
+      let currentId = workflowId;
+      let res = await fetch(`/api/workflows/${currentId}/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scope: "full" }),
       });
-      const data = await res.json().catch(() => ({}));
+      let data = await res.json().catch(() => ({}));
+
+      if (res.status === 404 && data.error === "Workflow not found") {
+        const createRes = await fetch("/api/workflows", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: workflowName,
+            nodes,
+            edges,
+          }),
+        });
+        if (!createRes.ok) {
+          setRunError("Save the workflow first, then run.");
+          return;
+        }
+        const createData = await createRes.json();
+        const newId = createData.workflow?.id;
+        if (!newId) {
+          setRunError("Failed to create workflow.");
+          return;
+        }
+        setWorkflowId(newId);
+        router.replace(`/dashboard/workflow/${newId}`);
+        res = await fetch(`/api/workflows/${newId}/runs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scope: "full" }),
+        });
+        data = await res.json().catch(() => ({}));
+        currentId = newId;
+      }
+
       if (!res.ok) {
-        setRunError(data.error ?? (res.status === 404 ? "Save the workflow first." : "Failed to start run."));
+        setRunError(
+          data.error ??
+            (res.status === 404 ? "Save the workflow first." : "Failed to start run.")
+        );
         return;
       }
       requestHistoryRefresh();
@@ -148,7 +189,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     } finally {
       setRunLoading(false);
     }
-  }, [workflowId, requestHistoryRefresh]);
+  }, [
+    workflowId,
+    workflowName,
+    nodes,
+    edges,
+    setWorkflowId,
+    requestHistoryRefresh,
+    router,
+  ]);
 
   return (
     <div className="flex h-full">
