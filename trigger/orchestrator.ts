@@ -136,7 +136,7 @@ export const orchestratorTask = task({
         await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
         const execs = await prisma.nodeExecution.findMany({
           where: { id: { in: executionIds } },
-          select: { id, status, outputs, nodeId: true },
+          select: { id: true, status: true, outputs: true, nodeId: true },
         });
         done = execs.every(
           (e) => e.status === "SUCCESS" || e.status === "FAILED"

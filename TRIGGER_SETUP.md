@@ -23,11 +23,13 @@ In your Trigger.dev project, go to **Environment Variables** and add:
 
 - **DATABASE_URL** – same PostgreSQL URL as your app (e.g. Neon connection string), so tasks can write `WorkflowRun` and `NodeExecution` records.
 - **GEMINI_API_KEY** – your Google AI Studio key for the LLM task.
-- **FFMPEG_PATH** (optional for extract-frame task) – full path to the `ffmpeg` executable. Only needed if you want to override the bundled binary; the extract-frame task uses **ffmpeg-static** by default, so a local ffmpeg install is not required.
+- **FFMPEG_PATH** (optional) – Set automatically when using the FFmpeg build extension in deployment. Only set this if you want to override (e.g. a custom ffmpeg path).
 
-## 4. Extract-frame task (ffmpeg-static)
+## 4. Extract-frame task and FFmpeg
 
-The **Extract frame** node uses the **ffmpeg-static** npm package, which ships a bundled ffmpeg binary. You do not need to install ffmpeg on your system or set `FFMPEG_PATH` for normal use. If you need to use a different ffmpeg build, set `FFMPEG_PATH` in `.env` to the full path to your executable.
+- **Deployment (Trigger.dev cloud):** `trigger.config.ts` includes the **FFmpeg build extension**, so the task image has ffmpeg installed and `FFMPEG_PATH` is set. No extra setup.
+- **Local dev (`npx trigger.dev dev`):** The task uses the **ffmpeg-static** npm package as fallback when `FFMPEG_PATH` is not set, so you do not need to install ffmpeg on your machine.
+- To use a different ffmpeg build, set **FFMPEG_PATH** in your environment (e.g. in Trigger.dev dashboard for cloud, or in `.env` for local) to the full path to the `ffmpeg` executable.
 
 ## 5. Run the Trigger.dev dev server
 
@@ -60,3 +62,19 @@ For a brand‑new empty DB you would use `npx prisma migrate deploy` only.
 - **GET `/api/workflows/[id]/runs/[runId]`** – Get one run with node execution details.
 
 The LLM task runs on Trigger.dev, calls Gemini, then updates `NodeExecution` and (when all nodes for that run are done) `WorkflowRun` in your database.
+
+---
+
+## Config and setup checklist (Run workflow)
+
+1. **Environment variables (Trigger.dev dashboard)**  
+   Ensure **DATABASE_URL** and **GEMINI_API_KEY** are set. **FFMPEG_PATH** is optional (set by the FFmpeg extension in deployment).
+
+2. **Local dev**  
+   Run `npx trigger.dev dev` in a separate terminal. After any change to `trigger/*` code, restart this dev server so the updated tasks are used.
+
+3. **Deployment**  
+   Run `npx trigger.dev deploy` so the cloud uses the latest code and the image with FFmpeg. Use this when testing Run workflow in production or when the app triggers tasks on Trigger.dev cloud.
+
+4. **Orchestrator / Extract frame**  
+   The orchestrator uses a correct Prisma `select` (no `id is not defined`). The extract-frame task uses `FFMPEG_PATH` when set (deployment) or the ffmpeg-static binary (local). No local ffmpeg install required.

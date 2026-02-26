@@ -2,11 +2,30 @@ import { task, logger } from "@trigger.dev/sdk";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { writeFile, readFile, unlink } from "fs/promises";
+import { existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { randomUUID } from "crypto";
 import { spawnSync } from "child_process";
+import { createRequire } from "module";
 import { uploadImage } from "../lib/transloadit";
+
+function getFfmpegPath(): string {
+  if (process.env.FFMPEG_PATH) return process.env.FFMPEG_PATH;
+  try {
+    const require = createRequire(import.meta.url);
+    const path = require("ffmpeg-static") as string | { default?: string | null } | null;
+    const resolved = typeof path === "string" ? path : path?.default ?? null;
+    if (resolved && resolved.length > 0) return resolved;
+  } catch {
+    // ffmpeg-static not available (e.g. bundled) or failed to load
+  }
+  // Deployment image with FFmpeg extension has ffmpeg here
+  if (process.platform === "linux" && existsSync("/usr/bin/ffmpeg")) {
+    return "/usr/bin/ffmpeg";
+  }
+  return "ffmpeg";
+}
 
 function getPrisma() {
   const url = process.env.DATABASE_URL;
@@ -27,7 +46,7 @@ export const extractFrameTask = task({
     const { workflowRunId, nodeExecutionId, videoUrl, timestampSeconds } = payload;
     const prisma = getPrisma();
 
-    const ffmpegPath = process.env.FFMPEG_PATH ?? "ffmpeg";
+    const ffmpegPath = getFfmpegPath();
     const videoPath = join(tmpdir(), `galaxy-video-${randomUUID()}.mp4`);
     const framePath = join(tmpdir(), `galaxy-frame-${randomUUID()}.jpg`);
 
