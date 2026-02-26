@@ -50,6 +50,8 @@ export interface ExtractFrameNodeData {
   label: string;
   videoUrl: string | null; // from connection or manual
   timestampSeconds: number;
+  /** When set, timestamp cannot exceed this (e.g. from video duration). */
+  videoDurationSeconds?: number;
   outputUrl: string | null; // frame image URL
   [key: string]: unknown;
 }

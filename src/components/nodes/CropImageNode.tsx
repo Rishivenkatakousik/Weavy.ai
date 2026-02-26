@@ -2,7 +2,7 @@
 
 import React, { memo, useCallback } from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
-import { Trash2, Crop } from "lucide-react";
+import { Trash2, Crop, ChevronUp, ChevronDown } from "lucide-react";
 import { CropImageNodeData } from "@/src/types/workflow";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
@@ -37,6 +37,17 @@ const CropImageNode = memo(({ id, data, selected }: NodeProps) => {
     [id, updateNodeData]
   );
 
+  const x = Math.max(0, Math.min(100, Number(nodeData.xPercent) || 0));
+  const y = Math.max(0, Math.min(100, Number(nodeData.yPercent) || 0));
+  const w = Math.max(1, Math.min(100, Number(nodeData.widthPercent) || 100));
+  const h = Math.max(1, Math.min(100, Number(nodeData.heightPercent) || 100));
+
+  const step = 1;
+  const stepX = (delta: number) => setX(Math.max(0, Math.min(100, x + delta)));
+  const stepY = (delta: number) => setY(Math.max(0, Math.min(100, y + delta)));
+  const stepW = (delta: number) => setWidth(Math.max(1, Math.min(100, w + delta)));
+  const stepH = (delta: number) => setHeight(Math.max(1, Math.min(100, h + delta)));
+
   return (
     <div
       className={`min-w-[320px] max-w-[400px] rounded-lg border bg-neutral-800 shadow-lg transition-all duration-200 ${
@@ -68,47 +79,139 @@ const CropImageNode = memo(({ id, data, selected }: NodeProps) => {
         <div className="grid grid-cols-2 gap-2 text-xs">
           <label className="flex flex-col gap-0.5">
             <span className="text-neutral-500">X %</span>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={nodeData.xPercent}
-              onChange={(e) => setX(Number(e.target.value))}
-              className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-white"
-            />
+            <div className="flex items-stretch gap-0 rounded border border-neutral-700 bg-neutral-950 overflow-hidden">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={nodeData.xPercent}
+                onChange={(e) => setX(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-2 py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-inset focus:ring-neutral-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="X percent"
+              />
+              <div className="flex flex-col border-l border-neutral-700">
+                <button
+                  type="button"
+                  onClick={() => stepX(step)}
+                  disabled={x >= 100}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Increase X"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => stepX(-step)}
+                  disabled={x <= 0}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Decrease X"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
           </label>
           <label className="flex flex-col gap-0.5">
             <span className="text-neutral-500">Y %</span>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={nodeData.yPercent}
-              onChange={(e) => setY(Number(e.target.value))}
-              className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-white"
-            />
+            <div className="flex items-stretch gap-0 rounded border border-neutral-700 bg-neutral-950 overflow-hidden">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={nodeData.yPercent}
+                onChange={(e) => setY(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-2 py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-inset focus:ring-neutral-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Y percent"
+              />
+              <div className="flex flex-col border-l border-neutral-700">
+                <button
+                  type="button"
+                  onClick={() => stepY(step)}
+                  disabled={y >= 100}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Increase Y"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => stepY(-step)}
+                  disabled={y <= 0}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Decrease Y"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
           </label>
           <label className="flex flex-col gap-0.5">
             <span className="text-neutral-500">Width %</span>
-            <input
-              type="number"
-              min={1}
-              max={100}
-              value={nodeData.widthPercent}
-              onChange={(e) => setWidth(Number(e.target.value))}
-              className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-white"
-            />
+            <div className="flex items-stretch gap-0 rounded border border-neutral-700 bg-neutral-950 overflow-hidden">
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={nodeData.widthPercent}
+                onChange={(e) => setWidth(Math.max(1, Math.min(100, Number(e.target.value) || 1)))}
+                className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-2 py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-inset focus:ring-neutral-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Width percent"
+              />
+              <div className="flex flex-col border-l border-neutral-700">
+                <button
+                  type="button"
+                  onClick={() => stepW(step)}
+                  disabled={w >= 100}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Increase width"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => stepW(-step)}
+                  disabled={w <= 1}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Decrease width"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
           </label>
           <label className="flex flex-col gap-0.5">
             <span className="text-neutral-500">Height %</span>
-            <input
-              type="number"
-              min={1}
-              max={100}
-              value={nodeData.heightPercent}
-              onChange={(e) => setHeight(Number(e.target.value))}
-              className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-white"
-            />
+            <div className="flex items-stretch gap-0 rounded border border-neutral-700 bg-neutral-950 overflow-hidden">
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={nodeData.heightPercent}
+                onChange={(e) => setHeight(Math.max(1, Math.min(100, Number(e.target.value) || 1)))}
+                className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-2 py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-inset focus:ring-neutral-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Height percent"
+              />
+              <div className="flex flex-col border-l border-neutral-700">
+                <button
+                  type="button"
+                  onClick={() => stepH(step)}
+                  disabled={h >= 100}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Increase height"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => stepH(-step)}
+                  disabled={h <= 1}
+                  className="flex flex-1 items-center justify-center px-1.5 py-0.5 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Decrease height"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
           </label>
         </div>
         {nodeData.outputUrl && (
