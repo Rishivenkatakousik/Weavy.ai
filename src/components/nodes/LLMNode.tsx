@@ -50,7 +50,9 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
     nodes,
     edges,
     requestHistoryRefresh,
+    activeWorkflowRunId,
   } = useWorkflowStore();
+  const isWorkflowRunning = !!activeWorkflowRunId;
   const imageInputCount = (nodeData.imageInputCount as number) || 1;
   const [showMenu, setShowMenu] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -502,8 +504,9 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
 
         <button
           type="button"
-          disabled={nodeData.isLoading}
+          disabled={nodeData.isLoading || isWorkflowRunning}
           onClick={handleRun}
+          title={isWorkflowRunning ? "Wait for workflow run to finish" : undefined}
           className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium cursor-pointer text-white disabled:opacity-50"
         >
           <ArrowRight className="h-4 w-4" />

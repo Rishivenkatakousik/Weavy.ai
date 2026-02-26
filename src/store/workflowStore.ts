@@ -79,6 +79,10 @@ interface WorkflowState {
   // Triggers history sidebar to refetch runs (e.g. after starting a workflow run)
   historyRefreshTrigger: number;
   requestHistoryRefresh: () => void;
+
+  // When set, a full workflow run is in progress; individual LLM "Run Model" should be disabled
+  activeWorkflowRunId: string | null;
+  setActiveWorkflowRunId: (id: string | null) => void;
   saveWorkflow: () => void;
   loadWorkflow: (_id: string) => void;
   getWorkflowList: () => Workflow[];
@@ -309,6 +313,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   historyRefreshTrigger: 0,
   requestHistoryRefresh: () =>
     set((s) => ({ historyRefreshTrigger: s.historyRefreshTrigger + 1 })),
+  activeWorkflowRunId: null,
+  setActiveWorkflowRunId: (id) => set({ activeWorkflowRunId: id }),
   saveWorkflow: () => {
     // No-op: editor page performs PUT when requestSaveTrigger changes or on debounce
   },

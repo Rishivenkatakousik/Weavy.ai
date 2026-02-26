@@ -1,15 +1,104 @@
 "use client";
 
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
 import Sidebar from "@/src/components/Sidebar";
 import Canvas from "@/src/components/Canvas";
 import HistorySidebar from "@/src/components/HistorySidebar";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
+const POLL_INTERVAL_MS = 2000;
+
 function WorkflowBuilderInner() {
   const canvasWrapper = useRef<HTMLDivElement>(null);
-  const { addNode, workflowName, setWorkflowName } = useWorkflowStore();
+  const {
+    addNode,
+    workflowName,
+    setWorkflowName,
+    workflowId,
+    activeWorkflowRunId,
+    setActiveWorkflowRunId,
+    nodes,
+    updateNodeData,
+    requestHistoryRefresh,
+  } = useWorkflowStore();
+
+  // Clear active run when switching workflow
+  useEffect(() => {
+    return () => {
+      setActiveWorkflowRunId(null);
+    };
+  }, [workflowId, setActiveWorkflowRunId]);
+
+  // When a full workflow run is in progress, poll until done and apply outputs to nodes
+  useEffect(() => {
+    if (!activeWorkflowRunId || !workflowId) return;
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const res = await fetch(
+          `/api/workflows/${workflowId}/runs/${activeWorkflowRunId}`
+        );
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        const run = data.run as {
+          status: string;
+          nodeExecutions?: Array<{
+            nodeId: string;
+            status: string;
+            outputs: Record<string, unknown> | null;
+            errorMessage: string | null;
+          }>;
+        };
+        if (run.status !== "SUCCESS" && run.status !== "FAILED") return;
+
+        if (cancelled) return;
+        setActiveWorkflowRunId(null);
+        requestHistoryRefresh();
+
+        const executions = run.nodeExecutions ?? [];
+        for (const ne of executions) {
+          const node = nodes.find((n) => n.id === ne.nodeId);
+          if (!node) continue;
+          if (node.type === "llm") {
+            const outputs = (ne.outputs ?? {}) as {
+              content?: string;
+              generatedImage?: string;
+            };
+            updateNodeData(ne.nodeId, {
+              response: ne.status === "SUCCESS" ? (outputs.content ?? null) : null,
+              generatedImage: ne.status === "SUCCESS" ? (outputs.generatedImage ?? null) : null,
+              error: ne.status === "SUCCESS" ? null : (ne.errorMessage ?? "Run failed"),
+            });
+          } else if (node.type === "cropImage" || node.type === "extractFrame") {
+            const outputs = (ne.outputs ?? {}) as { outputUrl?: string };
+            updateNodeData(ne.nodeId, {
+              outputUrl: ne.status === "SUCCESS" ? (outputs.outputUrl ?? null) : null,
+            });
+          }
+        }
+      } catch {
+        if (!cancelled) setActiveWorkflowRunId(null);
+      }
+    };
+
+    const interval = setInterval(poll, POLL_INTERVAL_MS);
+    poll();
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [
+    activeWorkflowRunId,
+    workflowId,
+    nodes,
+    updateNodeData,
+    setActiveWorkflowRunId,
+    requestHistoryRefresh,
+  ]);
   const { screenToFlowPosition } = useReactFlow();
 
   const onDragStart = useCallback(

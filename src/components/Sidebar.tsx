@@ -43,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     setWorkflowName,
     requestSave,
     requestHistoryRefresh,
+    setActiveWorkflowRunId,
     loadSampleWorkflow,
     loadSampleWorkflow2,
     exportWorkflow,
@@ -186,6 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
         );
         return;
       }
+      if (data.run?.id) setActiveWorkflowRunId(data.run.id);
       requestHistoryRefresh();
     } catch (err) {
       setRunError(err instanceof Error ? err.message : "Failed to start run.");
@@ -199,6 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     nodes,
     edges,
     setWorkflowId,
+    setActiveWorkflowRunId,
     requestHistoryRefresh,
     router,
   ]);
