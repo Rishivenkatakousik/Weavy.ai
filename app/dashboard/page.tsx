@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const createInProgressRef = useRef(false);
 
   const displayName =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
@@ -62,6 +63,8 @@ export default function DashboardPage() {
   }, []);
 
   const createNewWorkflow = async () => {
+    if (createInProgressRef.current) return;
+    createInProgressRef.current = true;
     setIsCreating(true);
     try {
       const res = await fetch("/api/workflows", {
@@ -77,6 +80,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Failed to create workflow:", error);
     } finally {
+      createInProgressRef.current = false;
       setIsCreating(false);
     }
   };

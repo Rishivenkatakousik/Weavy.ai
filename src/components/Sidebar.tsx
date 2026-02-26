@@ -52,6 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
 
   const [runLoading, setRunLoading] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
+  const runInProgressRef = useRef(false);
 
   const initial =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() ||
@@ -134,6 +135,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
       setRunError("Save the workflow first.");
       return;
     }
+    if (runInProgressRef.current) return;
+    runInProgressRef.current = true;
     setRunError(null);
     setRunLoading(true);
     try {
@@ -187,6 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     } catch (err) {
       setRunError(err instanceof Error ? err.message : "Failed to start run.");
     } finally {
+      runInProgressRef.current = false;
       setRunLoading(false);
     }
   }, [

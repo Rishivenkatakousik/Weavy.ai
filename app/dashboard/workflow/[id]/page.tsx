@@ -16,6 +16,8 @@ export default function WorkflowEditorPage() {
   const hasLoadedRef = useRef(false);
   const loadedWorkflowIdRef = useRef<string | null>(null);
   const lastLoadTimeRef = useRef<number>(0);
+  const saveInProgressRef = useRef(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const {
     workflowName,
@@ -30,8 +32,9 @@ export default function WorkflowEditorPage() {
 
   const loadWorkflow = useCallback(async () => {
     if (!workflowId) return;
+    const idToLoad = workflowId;
     try {
-      const res = await fetch(`/api/workflows/${workflowId}`);
+      const res = await fetch(`/api/workflows/${idToLoad}`);
       if (!res.ok) {
         router.push("/dashboard");
         return;
@@ -39,7 +42,8 @@ export default function WorkflowEditorPage() {
 
       const data = await res.json();
       if (data.workflow) {
-        if (data.workflow.id !== workflowId) return;
+        if (data.workflow.id !== idToLoad) return;
+        if (loadedWorkflowIdRef.current === idToLoad) return;
 
         const loadedNodes = (data.workflow.nodes ?? []) as typeof nodes;
         const loadedEdges = (data.workflow.edges ?? []) as typeof edges;
@@ -52,6 +56,7 @@ export default function WorkflowEditorPage() {
         hasLoadedRef.current = true;
         loadedWorkflowIdRef.current = data.workflow.id;
         lastLoadTimeRef.current = Date.now();
+        setHasLoadedOnce(true);
       }
     } catch (error) {
       console.error("Failed to load workflow:", error);
@@ -65,6 +70,7 @@ export default function WorkflowEditorPage() {
     if (workflowId) {
       hasLoadedRef.current = false;
       loadedWorkflowIdRef.current = null;
+      setHasLoadedOnce(false);
       setIsLoading(true);
       loadWorkflow();
     }
@@ -77,14 +83,18 @@ export default function WorkflowEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const saveWorkflow = useCallback(async () => {
-    if (!workflowId || isSaving) return;
+    if (!workflowId || isSaving || saveInProgressRef.current) return;
+    saveInProgressRef.current = true;
 
     const isAnyNodeLoading = nodes.some(
       (node) =>
         node.type === "llm" &&
         (node.data as { isLoading?: boolean }).isLoading
     );
-    if (isAnyNodeLoading) return;
+    if (isAnyNodeLoading) {
+      saveInProgressRef.current = false;
+      return;
+    }
 
     const sanitizedNodes = nodes.map((node) => {
       if (node.type === "llm") {
@@ -153,13 +163,17 @@ export default function WorkflowEditorPage() {
       } catch (error) {
         console.error("Failed to save workflow:", error);
       } finally {
+        saveInProgressRef.current = false;
         setIsSaving(false);
       }
       return;
     }
 
     const timeSinceLoad = Date.now() - lastLoadTimeRef.current;
-    if (timeSinceLoad < 3000) return;
+    if (timeSinceLoad < 3000) {
+      saveInProgressRef.current = false;
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -188,21 +202,23 @@ export default function WorkflowEditorPage() {
     } catch (error) {
       console.error("Failed to save workflow:", error);
     } finally {
+      saveInProgressRef.current = false;
       setIsSaving(false);
     }
   }, [workflowId, workflowName, nodes, edges, isSaving, router, setWorkflowId]);
 
+  // Only schedule auto-save after we've loaded this workflow once (avoids POST on open)
   useEffect(() => {
-    if (!isLoading && workflowId) {
+    if (!isLoading && workflowId && hasLoadedOnce) {
       const timer = setTimeout(saveWorkflow, 2000);
       return () => clearTimeout(timer);
     }
-  }, [nodes, edges, workflowName, isLoading, workflowId, saveWorkflow]);
+  }, [nodes, edges, workflowName, isLoading, workflowId, hasLoadedOnce, saveWorkflow]);
 
-  // When user clicks Save in Sidebar, trigger a save now
+  // When user clicks Save in Sidebar, trigger a save now (only after we've loaded to avoid creating duplicates)
   useEffect(() => {
-    if (requestSaveTrigger > 0) saveWorkflow();
-  }, [requestSaveTrigger, saveWorkflow]);
+    if (requestSaveTrigger > 0 && hasLoadedOnce) saveWorkflow();
+  }, [requestSaveTrigger, hasLoadedOnce, saveWorkflow]);
 
   if (isLoading) {
     return <Loading message="Loading workflow..." />;
