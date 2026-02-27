@@ -30,8 +30,10 @@ const TextNode = memo(({ id, data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`min-w-[420px] max-w-[560px] rounded-lg border bg-neutral-800 shadow-lg transition-all duration-200 ${
-        selected ? "border-neutral-500 shadow-white/5" : "border-neutral-700 hover:border-neutral-600"
+      className={`min-w-[420px] max-w-[560px] rounded-lg border-2 bg-neutral-800 shadow-lg transition-all duration-200 ${
+        selected
+          ? "border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.3)]"
+          : "border-neutral-700 hover:border-neutral-600"
       }`}
     >
       <div className="flex items-center justify-between rounded-t-lg border-b border-neutral-700 bg-neutral-900 px-2 py-1.5">

@@ -260,9 +260,9 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`w-[380px] rounded-xl border shadow-lg transition-all duration-200 ${
+      className={`w-[380px] rounded-xl border-2 shadow-lg transition-all duration-200 ${
         selected
-          ? "border-neutral-500 bg-neutral-800 shadow-white/10"
+          ? "border-amber-400 bg-neutral-800 ring-2 ring-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.3)]"
           : "border-neutral-600 bg-neutral-800/95 hover:border-neutral-500"
       } ${nodeData.isLoading ? "border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.25)]" : ""}`}
       onMouseEnter={() => setIsHovered(true)}

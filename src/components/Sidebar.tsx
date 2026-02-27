@@ -51,6 +51,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     createNewWorkflow,
   } = useWorkflowStore();
 
+  const selectedNodeIds = nodes.filter((n) => n.selected).map((n) => n.id);
+  const hasSelection = selectedNodeIds.length > 0;
+
   const [runLoading, setRunLoading] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
   const runInProgressRef = useRef(false);
@@ -200,6 +203,89 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     workflowName,
     nodes,
     edges,
+    setWorkflowId,
+    setActiveWorkflowRunId,
+    requestHistoryRefresh,
+    router,
+  ]);
+
+  const handleRunSelected = useCallback(async () => {
+    if (!workflowId) {
+      setRunError("Save the workflow first.");
+      return;
+    }
+    if (selectedNodeIds.length === 0) return;
+    if (runInProgressRef.current) return;
+    runInProgressRef.current = true;
+    setRunError(null);
+    setRunLoading(true);
+    try {
+      let currentId = workflowId;
+      let res = await fetch(`/api/workflows/${currentId}/runs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scope: "selected",
+          selectedNodeIds,
+        }),
+      });
+      let data = await res.json().catch(() => ({}));
+
+      if (res.status === 404 && data.error === "Workflow not found") {
+        const createRes = await fetch("/api/workflows", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: workflowName,
+            nodes,
+            edges,
+          }),
+        });
+        if (!createRes.ok) {
+          setRunError("Save the workflow first, then run.");
+          return;
+        }
+        const createData = await createRes.json();
+        const newId = createData.workflow?.id;
+        if (!newId) {
+          setRunError("Failed to create workflow.");
+          return;
+        }
+        setWorkflowId(newId);
+        router.replace(`/dashboard/workflow/${newId}`);
+        res = await fetch(`/api/workflows/${newId}/runs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scope: "selected",
+            selectedNodeIds,
+          }),
+        });
+        data = await res.json().catch(() => ({}));
+        currentId = newId;
+      }
+
+      if (!res.ok) {
+        setRunError(
+          data.error ??
+            (res.status === 404 ? "Save the workflow first." : "Failed to start run.")
+        );
+        return;
+      }
+      if (data.run?.id) setActiveWorkflowRunId(data.run.id);
+      requestHistoryRefresh();
+    } catch (err) {
+      setRunError(err instanceof Error ? err.message : "Failed to start run.");
+    } finally {
+      runInProgressRef.current = false;
+      setRunLoading(false);
+    }
+  }, [
+    workflowId,
+    workflowName,
+    nodes,
+    edges,
+    selectedNodeIds,
     setWorkflowId,
     setActiveWorkflowRunId,
     requestHistoryRefresh,
@@ -391,6 +477,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
                 )}
                 <span>Run workflow</span>
               </button>
+              {hasSelection && (
+                <button
+                  type="button"
+                  onClick={handleRunSelected}
+                  disabled={runLoading || !workflowId}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/60 bg-amber-500/15 px-2 py-2.5 text-[10px] font-medium text-amber-300 transition-all hover:bg-amber-500/25 disabled:opacity-50 disabled:pointer-events-none"
+                  title={`Run ${selectedNodeIds.length} selected node(s)`}
+                >
+                  {runLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5" />
+                  )}
+                  <span>Run selected</span>
+                </button>
+              )}
               {runError && (
                 <p className="text-[10px] text-red-400" title={runError}>
                   {runError}
