@@ -7,6 +7,31 @@ import { VideoNodeData } from "@/src/types/workflow";
 import { useWorkflowStore } from "@/src/store/workflowStore";
 
 const ACCEPT_VIDEO = "video/mp4,video/quicktime,video/webm,video/x-m4v";
+const TRANSLOADIT_ASSEMBLY_URL = "https://api2.transloadit.com/assemblies";
+const POLL_INTERVAL_MS = 2000;
+const POLL_MAX_ATTEMPTS = 120; // ~4 min
+
+async function pollAssemblyUntilComplete(assemblyUrl: string): Promise<string> {
+  for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {
+    const res = await fetch(assemblyUrl);
+    const data = (await res.json()) as {
+      ok?: string;
+      results?: { video?: Array<{ ssl_url?: string; url?: string }> };
+    };
+    if (data.ok === "ASSEMBLY_COMPLETED") {
+      const first = data.results?.video?.[0];
+      const url = first?.ssl_url ?? first?.url;
+      if (url && typeof url === "string") return url;
+      throw new Error("Assembly completed but no video URL in results");
+    }
+    if (data.ok === "ASSEMBLY_CANCELED" || data.ok === "ASSEMBLY_ERROR") {
+      const msg = (data as { message?: string }).message ?? "Assembly failed";
+      throw new Error(msg);
+    }
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+  }
+  throw new Error("Upload timed out");
+}
 
 const VideoNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as VideoNodeData;
@@ -27,26 +52,48 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
   }, [id, deleteNode]);
 
   const uploadVideo = useCallback(
-    async (base64: string) => {
+    async (file: File) => {
       setUploadError(null);
       setIsUploading(true);
       try {
-        const res = await fetch("/api/upload/video", {
+        const signRes = await fetch("/api/upload/sign?type=video", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ video: base64 }),
         });
-        const result = await res.json().catch(() => ({}));
-        if (res.ok && result.url) {
-          updateNodeData(id, { videoUrl: result.url });
-        } else {
-          const message =
-            result?.error ??
-            (res.status === 413 ? "Video too large. Try a smaller file." : "Upload failed.");
-          setUploadError(message);
+        if (!signRes.ok) {
+          const err = await signRes.json().catch(() => ({}));
+          throw new Error(err?.error ?? "Failed to get upload signature");
         }
+        const { params, signature } = await signRes.json();
+
+        const formData = new FormData();
+        formData.append("params", params);
+        formData.append("signature", signature);
+        formData.append("file1", file);
+
+        const uploadRes = await fetch(TRANSLOADIT_ASSEMBLY_URL, {
+          method: "POST",
+          body: formData,
+        });
+        const uploadData = (await uploadRes.json()) as {
+          ok?: string;
+          assembly_ssl_url?: string;
+          message?: string;
+        };
+
+        if (!uploadRes.ok || !uploadData.assembly_ssl_url) {
+          throw new Error(
+            uploadData.message ?? "Upload to Transloadit failed"
+          );
+        }
+
+        const videoUrl = await pollAssemblyUntilComplete(
+          uploadData.assembly_ssl_url
+        );
+        updateNodeData(id, { videoUrl });
       } catch (err) {
-        setUploadError(err instanceof Error ? err.message : "Upload failed.");
+        const message =
+          err instanceof Error ? err.message : "Upload failed.";
+        setUploadError(message);
       } finally {
         setIsUploading(false);
       }
@@ -57,13 +104,7 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          uploadVideo(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      }
+      if (file) uploadVideo(file);
     },
     [uploadVideo]
   );
@@ -74,11 +115,7 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
       const file = e.dataTransfer.files[0];
       const allowed = ["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"];
       if (file && allowed.includes(file.type)) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          uploadVideo(reader.result as string);
-        };
-        reader.readAsDataURL(file);
+        uploadVideo(file);
       }
     },
     [uploadVideo]

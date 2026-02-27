@@ -23,21 +23,6 @@ import {
 import { useWorkflowStore } from "@/src/store/workflowStore";
 import { validateDAG } from "@/lib/workflowValidation";
 
-const urlToBase64 = async (url: string): Promise<string | null> => {
-  try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
-};
-
 const POLL_INTERVAL_MS = 1500;
 
 const LLMNode = memo(({ id, data, selected }: NodeProps) => {
@@ -122,11 +107,12 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         }
       } else if (sourceNode.type === "image") {
         const imageData = sourceNode.data as ImageNodeData;
-        if (imageData.imageBase64) {
+        if (imageData.imageUrl?.startsWith("http")) {
+          images.push(imageData.imageUrl);
+        } else if (imageData.imageBase64) {
           images.push(imageData.imageBase64);
-        } else if (imageData.imageUrl?.startsWith("http")) {
-          const base64 = await urlToBase64(imageData.imageUrl);
-          if (base64) images.push(base64);
+        } else if (imageData.imageUrl) {
+          images.push(imageData.imageUrl);
         }
       } else if (sourceNode.type === "llm") {
         const llmData = sourceNode.data as LLMNodeData;
