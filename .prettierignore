@@ -1,0 +1,23 @@
+# Dependencies and build
+node_modules
+.next
+out
+build
+dist
+
+# Generated / lockfiles
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+*.min.js
+
+# Prisma generated client
+generated
+
+# Env and secrets
+.env
+.env.*
+
+# Misc
+*.md
+!.prettierrc

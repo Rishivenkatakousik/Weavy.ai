@@ -168,13 +168,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   onConnect: (connection) => {
     const { nodes, edges } = get();
-    const targetHandle = connection.targetHandle;
-
-    const existingConnection = edges.find(
-      (edge) =>
-        edge.target === connection.target && edge.targetHandle === targetHandle
-    );
-    if (existingConnection) return;
 
     if (!isValidNewConnection(connection, nodes, edges)) return;
 
