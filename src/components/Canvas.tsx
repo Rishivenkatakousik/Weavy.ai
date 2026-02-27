@@ -90,7 +90,15 @@ const CanvasInner: React.FC<CanvasProps> = ({ onDragOver, onDrop }) => {
   );
 
   const isValidConnection = useCallback(
-    (connection: Connection) => isValidNewConnection(connection, nodes, edges),
+    (connectionOrEdge: Connection | Edge) => {
+      const connection: Connection = {
+        source: connectionOrEdge.source,
+        target: connectionOrEdge.target,
+        sourceHandle: connectionOrEdge.sourceHandle ?? null,
+        targetHandle: connectionOrEdge.targetHandle ?? null,
+      };
+      return isValidNewConnection(connection, nodes, edges);
+    },
     [nodes, edges]
   );
 

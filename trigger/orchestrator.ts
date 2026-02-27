@@ -1,5 +1,5 @@
 import { task, tasks, logger } from "@trigger.dev/sdk";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { Node, Edge } from "@xyflow/react";
 import { validateDAG } from "../lib/workflowValidation";
@@ -104,7 +104,7 @@ export const orchestratorTask = task({
           const imageUrl = inputs.imageUrl as string | undefined;
           await prisma.nodeExecution.update({
             where: { id: nodeExecutionId },
-            data: { inputs },
+            data: { inputs: inputs as Prisma.InputJsonValue },
           });
           await tasks.trigger<typeof cropImageTask>("workflow-crop-image", {
             workflowRunId,
@@ -119,7 +119,7 @@ export const orchestratorTask = task({
           const videoUrl = inputs.videoUrl as string | undefined;
           await prisma.nodeExecution.update({
             where: { id: nodeExecutionId },
-            data: { inputs },
+            data: { inputs: inputs as Prisma.InputJsonValue },
           });
           await tasks.trigger<typeof extractFrameTask>("workflow-extract-frame", {
             workflowRunId,
