@@ -52,14 +52,10 @@ function WorkflowBuilderInner() {
             errorMessage: string | null;
           }>;
         };
-        if (run.status !== "SUCCESS" && run.status !== "FAILED") return;
-
-        if (cancelled) return;
-        setActiveWorkflowRunId(null);
-        requestHistoryRefresh();
 
         const executions = run.nodeExecutions ?? [];
         for (const ne of executions) {
+          if (ne.status !== "SUCCESS" && ne.status !== "FAILED") continue;
           const node = nodes.find((n) => n.id === ne.nodeId);
           if (!node) continue;
           if (node.type === "llm") {
@@ -67,18 +63,28 @@ function WorkflowBuilderInner() {
               content?: string;
               generatedImage?: string;
             };
-            updateNodeData(ne.nodeId, {
-              response: ne.status === "SUCCESS" ? (outputs.content ?? null) : null,
-              generatedImage: ne.status === "SUCCESS" ? (outputs.generatedImage ?? null) : null,
-              error: ne.status === "SUCCESS" ? null : (ne.errorMessage ?? "Run failed"),
-            });
+            if (!cancelled) {
+              updateNodeData(ne.nodeId, {
+                response: ne.status === "SUCCESS" ? (outputs.content ?? null) : null,
+                generatedImage: ne.status === "SUCCESS" ? (outputs.generatedImage ?? null) : null,
+                error: ne.status === "SUCCESS" ? null : (ne.errorMessage ?? "Run failed"),
+              });
+            }
           } else if (node.type === "cropImage" || node.type === "extractFrame") {
             const outputs = (ne.outputs ?? {}) as { outputUrl?: string };
-            updateNodeData(ne.nodeId, {
-              outputUrl: ne.status === "SUCCESS" ? (outputs.outputUrl ?? null) : null,
-            });
+            if (!cancelled) {
+              updateNodeData(ne.nodeId, {
+                outputUrl: ne.status === "SUCCESS" ? (outputs.outputUrl ?? null) : null,
+              });
+            }
           }
         }
+
+        if (run.status !== "SUCCESS" && run.status !== "FAILED") return;
+
+        if (cancelled) return;
+        setActiveWorkflowRunId(null);
+        requestHistoryRefresh();
       } catch {
         if (!cancelled) setActiveWorkflowRunId(null);
       }
