@@ -18,6 +18,7 @@ function WorkflowBuilderInner() {
     workflowId,
     activeWorkflowRunId,
     setActiveWorkflowRunId,
+    setActiveRunNodeStatuses,
     nodes,
     updateNodeData,
     requestHistoryRefresh,
@@ -54,6 +55,13 @@ function WorkflowBuilderInner() {
         };
 
         const executions = run.nodeExecutions ?? [];
+        if (run.status !== "SUCCESS" && run.status !== "FAILED") {
+          const statusMap: Record<string, string> = {};
+          for (const ne of executions) {
+            statusMap[ne.nodeId] = ne.status;
+          }
+          if (!cancelled) setActiveRunNodeStatuses(statusMap);
+        }
         for (const ne of executions) {
           if (ne.status !== "SUCCESS" && ne.status !== "FAILED") continue;
           const node = nodes.find((n) => n.id === ne.nodeId);
@@ -103,6 +111,7 @@ function WorkflowBuilderInner() {
     nodes,
     updateNodeData,
     setActiveWorkflowRunId,
+    setActiveRunNodeStatuses,
     requestHistoryRefresh,
   ]);
   const { screenToFlowPosition } = useReactFlow();

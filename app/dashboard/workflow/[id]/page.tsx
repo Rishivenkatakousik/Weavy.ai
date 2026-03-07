@@ -46,7 +46,9 @@ export default function WorkflowEditorPage() {
         if (loadedWorkflowIdRef.current === idToLoad) return;
 
         const loadedNodes = (data.workflow.nodes ?? []) as typeof nodes;
-        const loadedEdges = (data.workflow.edges ?? []) as typeof edges;
+        const loadedEdges = ((data.workflow.edges ?? []) as typeof edges).map(
+          (e) => ({ ...e, type: e.type ?? "glow" })
+        );
 
         setWorkflowId(data.workflow.id);
         setWorkflowName(data.workflow.name ?? "Untitled Workflow");

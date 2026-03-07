@@ -32,6 +32,7 @@ import LLMNode from "./nodes/LLMNode";
 import VideoNode from "./nodes/VideoNode";
 import CropImageNode from "./nodes/CropImageNode";
 import ExtractFrameNode from "./nodes/ExtractFrameNode";
+import GlowEdge from "./edges/GlowEdge";
 
 const nodeTypes = {
   text: TextNode,
@@ -40,6 +41,10 @@ const nodeTypes = {
   video: VideoNode,
   cropImage: CropImageNode,
   extractFrame: ExtractFrameNode,
+};
+
+const edgeTypes = {
+  glow: GlowEdge,
 };
 
 interface CanvasProps {
@@ -138,12 +143,14 @@ const CanvasInner: React.FC<CanvasProps> = ({ onDragOver, onDrop }) => {
         onReconnectStart={onReconnectStart}
         onReconnectEnd={onReconnectEnd}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onDragOver={onDragOver}
         onDrop={onDrop}
         snapToGrid
         snapGrid={[15, 15]}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         defaultEdgeOptions={{
+          type: "glow",
           animated: true,
           style: { stroke: "#525252", strokeWidth: 2 },
         }}

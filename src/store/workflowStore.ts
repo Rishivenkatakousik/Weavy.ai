@@ -83,6 +83,9 @@ interface WorkflowState {
   // When set, a full workflow run is in progress; individual LLM "Run Model" should be disabled
   activeWorkflowRunId: string | null;
   setActiveWorkflowRunId: (id: string | null) => void;
+  // Node execution status for the active run (nodeId -> status); used for glowing edges when RUNNING
+  activeRunNodeStatuses: Record<string, "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"> | null;
+  setActiveRunNodeStatuses: (statuses: Record<string, string> | null) => void;
   saveWorkflow: () => void;
   loadWorkflow: (_id: string) => void;
   getWorkflowList: () => Workflow[];
@@ -174,6 +177,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const newEdge = {
       ...connection,
       id: `edge_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: "glow",
       animated: true,
       style: { stroke: "#444", strokeWidth: 2 },
     };
@@ -307,7 +311,19 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   requestHistoryRefresh: () =>
     set((s) => ({ historyRefreshTrigger: s.historyRefreshTrigger + 1 })),
   activeWorkflowRunId: null,
-  setActiveWorkflowRunId: (id) => set({ activeWorkflowRunId: id }),
+  setActiveWorkflowRunId: (id) =>
+    set({
+      activeWorkflowRunId: id,
+      ...(id == null && { activeRunNodeStatuses: null }),
+    }),
+  activeRunNodeStatuses: null,
+  setActiveRunNodeStatuses: (statuses) =>
+    set({
+      activeRunNodeStatuses:
+        statuses == null
+          ? null
+          : (statuses as Record<string, "PENDING" | "RUNNING" | "SUCCESS" | "FAILED">),
+    }),
   saveWorkflow: () => {
     // No-op: editor page performs PUT when requestSaveTrigger changes or on debounce
   },
@@ -450,6 +466,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const sampleEdges: Edge[] = [
       {
         id: "e1",
+        type: "glow",
         source: "img_product",
         target: "llm_strategist",
         targetHandle: "image-0",
@@ -458,6 +475,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       },
       {
         id: "e2",
+        type: "glow",
         source: "text_product",
         target: "llm_strategist",
         targetHandle: "prompt",
@@ -466,6 +484,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       },
       {
         id: "e3",
+        type: "glow",
         source: "llm_strategist",
         sourceHandle: "output",
         target: "llm_social",
@@ -475,6 +494,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       },
       {
         id: "e4",
+        type: "glow",
         source: "llm_strategist",
         sourceHandle: "output",
         target: "llm_ads",
@@ -484,6 +504,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       },
       {
         id: "e5",
+        type: "glow",
         source: "llm_strategist",
         sourceHandle: "output",
         target: "llm_landing",
@@ -493,6 +514,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       },
       {
         id: "e6",
+        type: "glow",
         source: "llm_strategist",
         sourceHandle: "output",
         target: "llm_email",
@@ -502,6 +524,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       },
       {
         id: "e7",
+        type: "glow",
         source: "llm_strategist",
         sourceHandle: "output",
         target: "llm_video",
@@ -549,11 +572,15 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   importWorkflow: (json) => {
     try {
       const workflow = JSON.parse(json) as Workflow;
+      const edgesWithType = workflow.edges.map((e) => ({
+        ...e,
+        type: e.type ?? "glow",
+      }));
       set({
         workflowId: workflow.id,
         workflowName: workflow.name,
         nodes: workflow.nodes,
-        edges: workflow.edges,
+        edges: edgesWithType,
         history: [],
         historyIndex: -1,
       });

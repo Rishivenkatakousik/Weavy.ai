@@ -114,13 +114,13 @@ export const productMarketingKitNodes: WorkflowNode[] = [
 ];
 
 export const productMarketingKitEdges: Edge[] = [
-  { id: "e_pmk_img_crop", source: "pmk_img", target: "pmk_crop", targetHandle: "image", animated: true, style: { stroke: "#525252", strokeWidth: 2 } },
-  { id: "e_pmk_sys_llm1", source: "pmk_text_system", target: "pmk_llm1", targetHandle: "prompt", animated: true, style: { stroke: "#a78bfa", strokeWidth: 2 } },
-  { id: "e_pmk_prod_llm1", source: "pmk_text_product", target: "pmk_llm1", targetHandle: "prompt", animated: true, style: { stroke: "#a78bfa", strokeWidth: 2 } },
-  { id: "e_pmk_video_extract", source: "pmk_video", target: "pmk_extract", targetHandle: "video", animated: true, style: { stroke: "#6366f1", strokeWidth: 2 } },
-  { id: "e_pmk_llm1_llm2", source: "pmk_llm1", sourceHandle: "output", target: "pmk_llm2", targetHandle: "prompt", animated: true, style: { stroke: "#a78bfa", strokeWidth: 2 } },
-  { id: "e_pmk_crop_llm2", source: "pmk_crop", target: "pmk_llm2", targetHandle: "image-0", animated: true, style: { stroke: "#22c55e", strokeWidth: 2 } },
-  { id: "e_pmk_extract_llm2", source: "pmk_extract", target: "pmk_llm2", targetHandle: "image-1", animated: true, style: { stroke: "#eab308", strokeWidth: 2 } },
+  { id: "e_pmk_img_crop", type: "glow", source: "pmk_img", target: "pmk_crop", targetHandle: "image", animated: true, style: { stroke: "#525252", strokeWidth: 2 } },
+  { id: "e_pmk_sys_llm1", type: "glow", source: "pmk_text_system", target: "pmk_llm1", targetHandle: "prompt", animated: true, style: { stroke: "#a78bfa", strokeWidth: 2 } },
+  { id: "e_pmk_prod_llm1", type: "glow", source: "pmk_text_product", target: "pmk_llm1", targetHandle: "prompt", animated: true, style: { stroke: "#a78bfa", strokeWidth: 2 } },
+  { id: "e_pmk_video_extract", type: "glow", source: "pmk_video", target: "pmk_extract", targetHandle: "video", animated: true, style: { stroke: "#6366f1", strokeWidth: 2 } },
+  { id: "e_pmk_llm1_llm2", type: "glow", source: "pmk_llm1", sourceHandle: "output", target: "pmk_llm2", targetHandle: "prompt", animated: true, style: { stroke: "#a78bfa", strokeWidth: 2 } },
+  { id: "e_pmk_crop_llm2", type: "glow", source: "pmk_crop", target: "pmk_llm2", targetHandle: "image-0", animated: true, style: { stroke: "#22c55e", strokeWidth: 2 } },
+  { id: "e_pmk_extract_llm2", type: "glow", source: "pmk_extract", target: "pmk_llm2", targetHandle: "image-1", animated: true, style: { stroke: "#eab308", strokeWidth: 2 } },
 ];
 
 export function getProductMarketingKitTemplate(): {
