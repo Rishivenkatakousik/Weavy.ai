@@ -6,7 +6,7 @@ import { validateDAG } from "../lib/workflowValidation";
 import {
   getExecutionPlan,
   getNodesToRun,
-  getExecutionLevels,
+  getIncomingByNode,
   resolveInputsForNode,
   type RunScope,
 } from "../lib/execution";
@@ -59,7 +59,7 @@ export const orchestratorTask = task({
 
     const { order } = plan;
     const toRun = getNodesToRun(nodes, edges, scope, { nodeId, selectedNodeIds });
-    const levels = getExecutionLevels(order, edges, toRun);
+    const incoming = getIncomingByNode(edges);
 
     const nodeIdToExecutionId = new Map<string, string>();
 
@@ -75,9 +75,19 @@ export const orchestratorTask = task({
     }
 
     const executionOutputs = new Map<string, { outputs: Record<string, unknown> | null }>();
+    const completedNodeIds = new Set<string>();
+    const triggeredNodeIds = new Set<string>();
 
-    for (const levelNodeIds of levels) {
-      for (const nid of levelNodeIds) {
+    while (completedNodeIds.size < toRun.size) {
+      const depsInToRun = (nid: string) =>
+        (incoming.get(nid) ?? []).filter((d) => toRun.has(d));
+      const ready = [...toRun].filter(
+        (nid) =>
+          !triggeredNodeIds.has(nid) &&
+          depsInToRun(nid).every((d) => completedNodeIds.has(d))
+      );
+
+      for (const nid of ready) {
         const node = nodes.find((n) => n.id === nid);
         if (!node) continue;
         const nodeExecutionId = nodeIdToExecutionId.get(nid)!;
@@ -128,25 +138,23 @@ export const orchestratorTask = task({
             timestampSeconds: (inputs.timestampSeconds as number) ?? 0,
           });
         }
+        triggeredNodeIds.add(nid);
       }
 
-      const executionIds = levelNodeIds.map((id) => nodeIdToExecutionId.get(id)!);
-      let done = false;
-      while (!done) {
-        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-        const execs = await prisma.nodeExecution.findMany({
-          where: { id: { in: executionIds } },
-          select: { id: true, status: true, outputs: true, nodeId: true },
-        });
-        done = execs.every(
-          (e) => e.status === "SUCCESS" || e.status === "FAILED"
-        );
-        if (done) {
-          for (const e of execs) {
-            executionOutputs.set(e.nodeId, {
-              outputs: (e.outputs as Record<string, unknown>) ?? null,
-            });
-          }
+      if (completedNodeIds.size === toRun.size) break;
+
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+      const executionIds = [...triggeredNodeIds].map((id) => nodeIdToExecutionId.get(id)!);
+      const execs = await prisma.nodeExecution.findMany({
+        where: { id: { in: executionIds } },
+        select: { id: true, status: true, outputs: true, nodeId: true },
+      });
+      for (const e of execs) {
+        if (e.status === "SUCCESS" || e.status === "FAILED") {
+          completedNodeIds.add(e.nodeId);
+          executionOutputs.set(e.nodeId, {
+            outputs: (e.outputs as Record<string, unknown>) ?? null,
+          });
         }
       }
     }
@@ -171,7 +179,7 @@ export const orchestratorTask = task({
       });
     }
 
-    logger.log("Orchestrator completed", { workflowRunId, levelCount: levels.length });
-    return { workflowRunId, levelCount: levels.length };
+    logger.log("Orchestrator completed", { workflowRunId, nodeCount: toRun.size });
+    return { workflowRunId, nodeCount: toRun.size };
   },
 });

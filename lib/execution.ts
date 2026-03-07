@@ -7,8 +7,9 @@ const EXECUTABLE_TYPES = ["llm", "cropImage", "extractFrame"] as const;
 
 /**
  * Build adjacency list: for each node, list of node IDs that must run before it (incoming).
+ * Exported for dependency-based execution (orchestrator).
  */
-function getIncomingByNode(edges: Edge[]): Map<string, string[]> {
+export function getIncomingByNode(edges: Edge[]): Map<string, string[]> {
   const incoming = new Map<string, string[]>();
   for (const e of edges) {
     const list = incoming.get(e.target) ?? [];
