@@ -49,10 +49,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     exportWorkflow,
     importWorkflow,
     createNewWorkflow,
+    saveStatus,
+    setSaveStatus,
   } = useWorkflowStore();
 
   const selectedNodeIds = nodes.filter((n) => n.selected).map((n) => n.id);
   const hasSelection = selectedNodeIds.length > 0;
+  const isVirtualWorkflowId =
+    !!workflowId &&
+    (workflowId.startsWith("sample_") || workflowId.startsWith("workflow_"));
+
+  // Clear "saved" message after a few seconds
+  useEffect(() => {
+    if (saveStatus !== "saved") return;
+    const t = setTimeout(() => setSaveStatus("idle"), 3000);
+    return () => clearTimeout(t);
+  }, [saveStatus, setSaveStatus]);
 
   const [runLoading, setRunLoading] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
@@ -139,50 +151,26 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
       setRunError("Save the workflow first.");
       return;
     }
+    if (isVirtualWorkflowId) {
+      setRunError("Save the workflow first, then run.");
+      return;
+    }
     if (runInProgressRef.current) return;
     runInProgressRef.current = true;
     setRunError(null);
     setRunLoading(true);
     try {
-      let currentId = workflowId;
-      let res = await fetch(`/api/workflows/${currentId}/runs`, {
+      const res = await fetch(`/api/workflows/${workflowId}/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scope: "full" }),
       });
-      let data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({}));
 
-      if (res.status === 404 && data.error === "Workflow not found") {
-        const createRes = await fetch("/api/workflows", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: workflowName,
-            nodes,
-            edges,
-          }),
-        });
-        if (!createRes.ok) {
-          setRunError("Save the workflow first, then run.");
-          return;
-        }
-        const createData = await createRes.json();
-        const newId = createData.workflow?.id;
-        if (!newId) {
-          setRunError("Failed to create workflow.");
-          return;
-        }
-        setWorkflowId(newId);
-        router.replace(`/dashboard/workflow/${newId}`);
-        res = await fetch(`/api/workflows/${newId}/runs`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ scope: "full" }),
-        });
-        data = await res.json().catch(() => ({}));
-        currentId = newId;
+      if (res.status === 404) {
+        setRunError("Save the workflow first, then run.");
+        return;
       }
-
       if (!res.ok) {
         setRunError(
           data.error ??
@@ -200,18 +188,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     }
   }, [
     workflowId,
-    workflowName,
-    nodes,
-    edges,
-    setWorkflowId,
+    isVirtualWorkflowId,
     setActiveWorkflowRunId,
     requestHistoryRefresh,
-    router,
   ]);
 
   const handleRunSelected = useCallback(async () => {
     if (!workflowId) {
       setRunError("Save the workflow first.");
+      return;
+    }
+    if (isVirtualWorkflowId) {
+      setRunError("Save the workflow first, then run.");
       return;
     }
     if (selectedNodeIds.length === 0) return;
@@ -220,8 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     setRunError(null);
     setRunLoading(true);
     try {
-      let currentId = workflowId;
-      let res = await fetch(`/api/workflows/${currentId}/runs`, {
+      const res = await fetch(`/api/workflows/${workflowId}/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -229,42 +216,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
           selectedNodeIds,
         }),
       });
-      let data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({}));
 
-      if (res.status === 404 && data.error === "Workflow not found") {
-        const createRes = await fetch("/api/workflows", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: workflowName,
-            nodes,
-            edges,
-          }),
-        });
-        if (!createRes.ok) {
-          setRunError("Save the workflow first, then run.");
-          return;
-        }
-        const createData = await createRes.json();
-        const newId = createData.workflow?.id;
-        if (!newId) {
-          setRunError("Failed to create workflow.");
-          return;
-        }
-        setWorkflowId(newId);
-        router.replace(`/dashboard/workflow/${newId}`);
-        res = await fetch(`/api/workflows/${newId}/runs`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            scope: "selected",
-            selectedNodeIds,
-          }),
-        });
-        data = await res.json().catch(() => ({}));
-        currentId = newId;
+      if (res.status === 404) {
+        setRunError("Save the workflow first, then run.");
+        return;
       }
-
       if (!res.ok) {
         setRunError(
           data.error ??
@@ -282,14 +239,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     }
   }, [
     workflowId,
-    workflowName,
-    nodes,
-    edges,
+    isVirtualWorkflowId,
     selectedNodeIds,
-    setWorkflowId,
     setActiveWorkflowRunId,
     requestHistoryRefresh,
-    router,
   ]);
 
   return (
@@ -458,16 +411,32 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
                 <button
                   type="button"
                   onClick={requestSave}
-                  className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-neutral-600 bg-transparent px-2 py-2 text-[10px] text-white transition-all hover:bg-neutral-800"
+                  disabled={saveStatus === "saving"}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-neutral-600 bg-transparent px-2 py-2 text-[10px] text-white transition-all hover:bg-neutral-800 disabled:opacity-50"
                 >
-                  <Save className="h-3 w-3" />
-                  <span>Save</span>
+                  {saveStatus === "saving" ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Save className="h-3 w-3" />
+                  )}
+                  <span>{saveStatus === "saving" ? "Saving…" : "Save"}</span>
                 </button>
               </div>
+              {saveStatus === "saved" && (
+                <p className="text-[10px] text-emerald-400">Workflow saved.</p>
+              )}
+              {saveStatus === "error" && (
+                <p className="text-[10px] text-red-400">Save failed.</p>
+              )}
               <button
                 type="button"
                 onClick={handleRunWorkflow}
-                disabled={runLoading || !workflowId}
+                disabled={runLoading || !workflowId || isVirtualWorkflowId}
+                title={
+                  isVirtualWorkflowId
+                    ? "Save the workflow first, then run."
+                    : undefined
+                }
                 className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-600/20 px-2 py-2.5 text-[10px] font-medium text-emerald-300 transition-all hover:bg-emerald-600/30 disabled:opacity-50 disabled:pointer-events-none"
               >
                 {runLoading ? (
@@ -481,9 +450,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
                 <button
                   type="button"
                   onClick={handleRunSelected}
-                  disabled={runLoading || !workflowId}
+                  disabled={runLoading || !workflowId || isVirtualWorkflowId}
+                  title={
+                    isVirtualWorkflowId
+                      ? "Save the workflow first, then run."
+                      : `Run ${selectedNodeIds.length} selected node(s)`
+                  }
                   className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/60 bg-amber-500/15 px-2 py-2.5 text-[10px] font-medium text-amber-300 transition-all hover:bg-amber-500/25 disabled:opacity-50 disabled:pointer-events-none"
-                  title={`Run ${selectedNodeIds.length} selected node(s)`}
                 >
                   {runLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

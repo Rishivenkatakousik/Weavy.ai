@@ -28,6 +28,7 @@ export default function WorkflowEditorPage() {
     setWorkflowName,
     setNodes,
     setEdges,
+    setSaveStatus,
   } = useWorkflowStore();
 
   const loadWorkflow = useCallback(async () => {
@@ -84,9 +85,12 @@ export default function WorkflowEditorPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const saveWorkflow = useCallback(async () => {
-    if (!workflowId || isSaving || saveInProgressRef.current) return;
+  const saveWorkflow = useCallback(async (showFeedback = false) => {
+    // Save into the current page's workflow (URL) so loading a demo updates this file instead of creating a new one
+    const idToSave = workflowId;
+    if (!idToSave || isSaving || saveInProgressRef.current) return;
     saveInProgressRef.current = true;
+    if (showFeedback) setSaveStatus("saving");
 
     const isAnyNodeLoading = nodes.some(
       (node) =>
@@ -95,6 +99,7 @@ export default function WorkflowEditorPage() {
     );
     if (isAnyNodeLoading) {
       saveInProgressRef.current = false;
+      if (showFeedback) setSaveStatus("idle");
       return;
     }
 
@@ -139,12 +144,10 @@ export default function WorkflowEditorPage() {
       edges,
     };
 
-    const isVirtualId =
-      workflowId.startsWith("sample_") || workflowId.startsWith("workflow_");
-    const isLoadedMatch =
-      hasLoadedRef.current && loadedWorkflowIdRef.current === workflowId;
+    const isUrlIdVirtual =
+      idToSave.startsWith("sample_") || idToSave.startsWith("workflow_");
 
-    if (isVirtualId || !isLoadedMatch) {
+    if (isUrlIdVirtual) {
       setIsSaving(true);
       try {
         const res = await fetch("/api/workflows", {
@@ -161,9 +164,13 @@ export default function WorkflowEditorPage() {
           loadedWorkflowIdRef.current = newId;
           lastLoadTimeRef.current = Date.now();
           router.replace(`/dashboard/workflow/${newId}`);
+          if (showFeedback) queueMicrotask(() => setSaveStatus("saved"));
+        } else if (showFeedback) {
+          setSaveStatus("error");
         }
       } catch (error) {
         console.error("Failed to save workflow:", error);
+        if (showFeedback) setSaveStatus("error");
       } finally {
         saveInProgressRef.current = false;
         setIsSaving(false);
@@ -174,12 +181,13 @@ export default function WorkflowEditorPage() {
     const timeSinceLoad = Date.now() - lastLoadTimeRef.current;
     if (timeSinceLoad < 3000) {
       saveInProgressRef.current = false;
+      if (showFeedback) setSaveStatus("idle");
       return;
     }
 
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/workflows/${workflowId}`, {
+      const res = await fetch(`/api/workflows/${idToSave}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -198,16 +206,29 @@ export default function WorkflowEditorPage() {
             loadedWorkflowIdRef.current = newId;
             lastLoadTimeRef.current = Date.now();
             router.replace(`/dashboard/workflow/${newId}`);
+            if (showFeedback) setSaveStatus("saved");
+          } else if (showFeedback) {
+            setSaveStatus("error");
           }
+        } else if (showFeedback) {
+          setSaveStatus("error");
         }
+      } else if (res.ok) {
+        setWorkflowId(idToSave);
+        hasLoadedRef.current = true;
+        loadedWorkflowIdRef.current = idToSave;
+        if (showFeedback) setSaveStatus("saved");
+      } else if (showFeedback) {
+        setSaveStatus("error");
       }
     } catch (error) {
       console.error("Failed to save workflow:", error);
+      if (showFeedback) setSaveStatus("error");
     } finally {
       saveInProgressRef.current = false;
       setIsSaving(false);
     }
-  }, [workflowId, workflowName, nodes, edges, isSaving, router, setWorkflowId]);
+  }, [workflowId, workflowName, nodes, edges, isSaving, router, setWorkflowId, setSaveStatus]);
 
   // Only schedule auto-save after we've loaded this workflow once (avoids POST on open)
   useEffect(() => {
@@ -217,9 +238,9 @@ export default function WorkflowEditorPage() {
     }
   }, [nodes, edges, workflowName, isLoading, workflowId, hasLoadedOnce, saveWorkflow]);
 
-  // When user clicks Save in Sidebar, trigger a save now (only after we've loaded to avoid creating duplicates)
+  // When user clicks Save in Sidebar, trigger a save now with loading indicator
   useEffect(() => {
-    if (requestSaveTrigger > 0 && hasLoadedOnce) saveWorkflow();
+    if (requestSaveTrigger > 0 && hasLoadedOnce) saveWorkflow(true);
   }, [requestSaveTrigger, hasLoadedOnce, saveWorkflow]);
 
   if (isLoading) {

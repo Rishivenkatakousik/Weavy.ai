@@ -77,6 +77,10 @@ interface WorkflowState {
   requestSaveTrigger: number;
   requestSave: () => void;
 
+  // Save feedback for UI (Sidebar shows "Workflow saved" when "saved")
+  saveStatus: "idle" | "saving" | "saved" | "error";
+  setSaveStatus: (status: "idle" | "saving" | "saved" | "error") => void;
+
   // Triggers history sidebar to refetch runs (e.g. after starting a workflow run)
   historyRefreshTrigger: number;
   requestHistoryRefresh: () => void;
@@ -308,6 +312,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   requestSaveTrigger: 0,
   requestSave: () =>
     set((s) => ({ requestSaveTrigger: s.requestSaveTrigger + 1 })),
+  saveStatus: "idle",
+  setSaveStatus: (status) => set({ saveStatus: status }),
   historyRefreshTrigger: 0,
   requestHistoryRefresh: () =>
     set((s) => ({ historyRefreshTrigger: s.historyRefreshTrigger + 1 })),
