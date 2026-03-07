@@ -8,12 +8,13 @@
 import type { WorkflowNode } from "@/src/types/workflow";
 import type { Edge } from "@xyflow/react";
 
+// Positions from product.json layout
 export const productMarketingKitNodes: WorkflowNode[] = [
   // Branch A: Image → Crop
   {
     id: "pmk_img",
     type: "image",
-    position: { x: 40, y: 40 },
+    position: { x: 420, y: -75 },
     data: {
       label: "Product Image",
       imageUrl: "https://pub-e8fef8c0e03b44acb340577811800829.r2.dev/b6e9c3d3d2c241ccafdb83f9928274c7/5298c901b3b8449ebd3b2472c192d62a/7664928808cf427cbbd794aa65e5db0c.mp4",
@@ -23,7 +24,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
   {
     id: "pmk_crop",
     type: "cropImage",
-    position: { x: 280, y: 40 },
+    position: { x: 1065, y: -30 },
     data: {
       label: "Crop for Hero",
       imageUrl: null,
@@ -38,7 +39,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
   {
     id: "pmk_text_system",
     type: "text",
-    position: { x: 40, y: 220 },
+    position: { x: 385, y: 216 },
     data: {
       label: "System Prompt",
       content:
@@ -48,7 +49,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
   {
     id: "pmk_text_product",
     type: "text",
-    position: { x: 40, y: 380 },
+    position: { x: 390, y: 570 },
     data: {
       label: "Product Details",
       content:
@@ -58,7 +59,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
   {
     id: "pmk_llm1",
     type: "llm",
-    position: { x: 320, y: 280 },
+    position: { x: 1050, y: 300 },
     data: {
       label: "Brand Summary",
       model: "gemini-2.5-flash",
@@ -75,7 +76,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
   {
     id: "pmk_video",
     type: "video",
-    position: { x: 40, y: 540 },
+    position: { x: 495, y: 930 },
     data: {
       label: "Product Video",
       videoUrl: "https://pub-e8fef8c0e03b44acb340577811800829.r2.dev/b6e9c3d3d2c241ccafdb83f9928274c7/5298c901b3b8449ebd3b2472c192d62a/7664928808cf427cbbd794aa65e5db0c.mp4",
@@ -84,7 +85,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
   {
     id: "pmk_extract",
     type: "extractFrame",
-    position: { x: 280, y: 540 },
+    position: { x: 1110, y: 855 },
     data: {
       label: "Key Frame",
       videoUrl: null,
@@ -96,7 +97,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
   {
     id: "pmk_llm2",
     type: "llm",
-    position: { x: 620, y: 280 },
+    position: { x: 1605, y: 270 },
     data: {
       label: "Marketing Tweet",
       model: "gemini-2.5-flash",
