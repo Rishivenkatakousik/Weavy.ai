@@ -146,7 +146,7 @@ const createCropImageNodeData = (): CropImageNodeData => ({
 const createExtractFrameNodeData = (): ExtractFrameNodeData => ({
   label: "Extract Frame",
   videoUrl: null,
-  timestampSeconds: 0,
+  timestampPercentage: 50,
   outputUrl: null,
 });
 

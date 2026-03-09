@@ -135,7 +135,7 @@ export const orchestratorTask = task({
             workflowRunId,
             nodeExecutionId,
             videoUrl: videoUrl ?? "",
-            timestampSeconds: (inputs.timestampSeconds as number) ?? 0,
+            timestampPercentage: (inputs.timestampPercentage as number) ?? 50,
           });
         }
         triggeredNodeIds.add(nid);

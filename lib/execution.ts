@@ -211,7 +211,7 @@ export function resolveInputsForNode(
     }
     return {
       videoUrl,
-      timestampSeconds: (data.timestampSeconds as number) ?? 0,
+      timestampPercentage: (data.timestampPercentage as number) ?? 50,
     };
   }
 

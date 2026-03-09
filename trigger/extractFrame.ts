@@ -27,6 +27,22 @@ function getFfmpegPath(): string {
   return "ffmpeg";
 }
 
+/** ffprobe is usually next to ffmpeg (same bin dir) */
+function getFfprobePath(): string {
+  if (process.env.FFPROBE_PATH) return process.env.FFPROBE_PATH;
+  const ffmpeg = getFfmpegPath();
+  if (ffmpeg !== "ffmpeg" && ffmpeg.includes("/")) {
+    const dir = ffmpeg.slice(0, ffmpeg.lastIndexOf("/") + 1);
+    const exe = process.platform === "win32" ? "ffprobe.exe" : "ffprobe";
+    const candidate = join(dir, exe);
+    if (existsSync(candidate)) return candidate;
+  }
+  if (process.platform === "linux" && existsSync("/usr/bin/ffprobe")) {
+    return "/usr/bin/ffprobe";
+  }
+  return "ffprobe";
+}
+
 function getPrisma() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
@@ -40,13 +56,14 @@ export const extractFrameTask = task({
     workflowRunId: string;
     nodeExecutionId: string;
     videoUrl: string;
-    timestampSeconds: number;
+    timestampPercentage: number;
   }) => {
     const startedAt = Date.now();
-    const { workflowRunId, nodeExecutionId, videoUrl, timestampSeconds } = payload;
+    const { workflowRunId, nodeExecutionId, videoUrl, timestampPercentage } = payload;
     const prisma = getPrisma();
 
     const ffmpegPath = getFfmpegPath();
+    const ffprobePath = getFfprobePath();
     const videoPath = join(tmpdir(), `galaxy-video-${randomUUID()}.mp4`);
     const framePath = join(tmpdir(), `galaxy-frame-${randomUUID()}.jpg`);
 
@@ -60,12 +77,38 @@ export const extractFrameTask = task({
       const buf = Buffer.from(await res.arrayBuffer());
       await writeFile(videoPath, buf);
 
+      // Get duration with ffprobe
+      const probe = spawnSync(
+        ffprobePath,
+        [
+          "-v",
+          "error",
+          "-show_entries",
+          "format=duration",
+          "-of",
+          "default=noprint_wrappers=1:nokey=1",
+          videoPath,
+        ],
+        { encoding: "utf8" }
+      );
+      
+      let durationSeconds = 0;
+      if (probe.status === 0 && probe.stdout) {
+        durationSeconds = parseFloat(probe.stdout.trim()) || 0;
+      }
+      
+      if (!durationSeconds) {
+         logger.warn("Could not determine video duration, defaulting to 0s", { output: probe.stdout, error: probe.stderr });
+      }
+
+      const targetSeconds = (timestampPercentage / 100) * durationSeconds;
+
       const result = spawnSync(
         ffmpegPath,
         [
           "-y",
           "-ss",
-          String(timestampSeconds),
+          String(targetSeconds),
           "-i",
           videoPath,
           "-vframes",

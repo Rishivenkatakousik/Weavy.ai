@@ -89,7 +89,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
     data: {
       label: "Key Frame",
       videoUrl: null,
-      timestampSeconds: 0,
+      timestampPercentage: 50,
       outputUrl: null,
     },
   },
