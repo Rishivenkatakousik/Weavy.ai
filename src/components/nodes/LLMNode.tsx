@@ -36,6 +36,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
     edges,
     requestHistoryRefresh,
     activeWorkflowRunId,
+    setActiveRunNodeStatuses,
   } = useWorkflowStore();
   const isWorkflowRunning = !!activeWorkflowRunId;
   const imageInputCount = (nodeData.imageInputCount as number) || 1;
@@ -153,6 +154,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
       response: null,
       generatedImage: null,
     });
+    setActiveRunNodeStatuses({ [id]: "RUNNING" });
     try {
       const { images, promptText } = await collectInputs();
       const fullUserPrompt =
@@ -163,6 +165,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
           error: "Please connect a Prompt input or enter a system prompt",
           isLoading: false,
         });
+        setActiveRunNodeStatuses(null);
         return;
       }
 
@@ -184,6 +187,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
           error: startData.error ?? "Failed to start run",
           isLoading: false,
         });
+        setActiveRunNodeStatuses(null);
         return;
       }
 
@@ -199,6 +203,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
             error: "Failed to fetch run status",
             isLoading: false,
           });
+          setActiveRunNodeStatuses(null);
           return;
         }
         const { run } = await runRes.json();
@@ -215,12 +220,14 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
             generatedImage: outputs.generatedImage ?? null,
             isLoading: false,
           });
+          setActiveRunNodeStatuses(null);
           done = true;
         } else if (exec?.status === "FAILED") {
           updateNodeData(id, {
             error: exec.errorMessage ?? "Run failed",
             isLoading: false,
           });
+          setActiveRunNodeStatuses(null);
           done = true;
         }
       }
@@ -230,6 +237,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
         error: error instanceof Error ? error.message : "An error occurred",
         isLoading: false,
       });
+      setActiveRunNodeStatuses(null);
     }
   }, [
     id,
@@ -240,6 +248,7 @@ const LLMNode = memo(({ id, data, selected }: NodeProps) => {
     updateNodeData,
     collectInputs,
     requestHistoryRefresh,
+    setActiveRunNodeStatuses,
   ]);
 
   const showLabels = isHovered;
