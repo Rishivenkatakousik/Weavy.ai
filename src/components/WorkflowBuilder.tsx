@@ -24,14 +24,14 @@ function WorkflowBuilderInner() {
     requestHistoryRefresh,
   } = useWorkflowStore();
 
-  // Clear active run when switching workflow
+  
   useEffect(() => {
     return () => {
       setActiveWorkflowRunId(null);
     };
   }, [workflowId, setActiveWorkflowRunId]);
 
-  // When a full workflow run is in progress, poll until done and apply outputs to nodes
+  
   useEffect(() => {
     if (!activeWorkflowRunId || !workflowId) return;
 

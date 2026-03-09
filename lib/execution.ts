@@ -5,10 +5,6 @@ export type RunScope = "full" | "single" | "selected";
 
 const EXECUTABLE_TYPES = ["llm", "cropImage", "extractFrame"] as const;
 
-/**
- * Build adjacency list: for each node, list of node IDs that must run before it (incoming).
- * Exported for dependency-based execution (orchestrator).
- */
 export function getIncomingByNode(edges: Edge[]): Map<string, string[]> {
   const incoming = new Map<string, string[]>();
   for (const e of edges) {
@@ -19,10 +15,6 @@ export function getIncomingByNode(edges: Edge[]): Map<string, string[]> {
   return incoming;
 }
 
-/**
- * Topological sort: returns nodes in execution order (roots first).
- * Only includes nodes that are in the given set and are executable.
- */
 export function topologicalOrder(
   nodes: Node[],
   edges: Edge[],
@@ -38,7 +30,7 @@ export function topologicalOrder(
       const deps = incoming.get(id) ?? [];
       return deps.every((d) => !remaining.has(d));
     });
-    if (ready.length === 0) break; // cycle guard
+    if (ready.length === 0) break; 
     for (const id of ready) {
       result.push(id);
       remaining.delete(id);
@@ -48,12 +40,6 @@ export function topologicalOrder(
   return result;
 }
 
-/**
- * Get the set of node IDs to run based on scope.
- * - full: all executable nodes (llm, cropImage, extractFrame)
- * - single: nodeId + all its ancestors
- * - selected: selectedNodeIds + all their ancestors
- */
 export function getNodesToRun(
   nodes: Node[],
   edges: Edge[],
@@ -105,10 +91,6 @@ export function getNodesToRun(
   return new Set();
 }
 
-/**
- * Resolve inputs for a node from the graph and execution outputs.
- * Returns a record suitable for passing to Trigger tasks.
- */
 export function resolveInputsForNode(
   nodeId: string,
   nodes: Node[],
@@ -218,9 +200,6 @@ export function resolveInputsForNode(
   return {};
 }
 
-/**
- * Validate workflow and return execution order for the given scope.
- */
 export function getExecutionPlan(
   nodes: Node[],
   edges: Edge[],
@@ -245,11 +224,6 @@ export function getExecutionPlan(
   return { valid: true, order };
 }
 
-/**
- * Group topo order into levels. Level 0 = nodes with no deps in set;
- * level i = nodes whose all deps in set are in levels 0..i-1.
- * Nodes in the same level can run in parallel.
- */
 export function getExecutionLevels(
   order: string[],
   edges: Edge[],

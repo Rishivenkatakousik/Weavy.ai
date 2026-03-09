@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onDragStart }) => {
     !!workflowId &&
     (workflowId.startsWith("sample_") || workflowId.startsWith("workflow_"));
 
-  // Clear "saved" message after a few seconds
+  
   useEffect(() => {
     if (saveStatus !== "saved") return;
     const t = setTimeout(() => setSaveStatus("idle"), 3000);

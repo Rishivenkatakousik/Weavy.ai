@@ -2,9 +2,6 @@ import type { Connection, Node, Edge } from "@xyflow/react";
 
 export type DataType = "text" | "image" | "video";
 
-/**
- * Return the data type emitted by a source handle.
- */
 export function getSourceDataType(
   nodeType: string | undefined,
   sourceHandle: string | null
@@ -20,9 +17,6 @@ export function getSourceDataType(
   return null;
 }
 
-/**
- * Return the data type expected by a target handle.
- */
 export function getTargetDataType(targetHandle: string | null): DataType | null {
   if (!targetHandle) return null;
   if (targetHandle === "prompt") return "text";
@@ -31,9 +25,6 @@ export function getTargetDataType(targetHandle: string | null): DataType | null 
   return null;
 }
 
-/**
- * Check if a connection is type-valid (text→text, image→image, video→video).
- */
 export function isConnectionTypeValid(
   connection: Connection,
   nodes: Node[]
@@ -49,9 +40,6 @@ export function isConnectionTypeValid(
   return sourceType === targetType;
 }
 
-/**
- * Build directed adjacency list: nodeId -> list of node IDs it points to.
- */
 function buildAdjacency(edges: Edge[]): Map<string, string[]> {
   const adj = new Map<string, string[]>();
   for (const e of edges) {
@@ -62,9 +50,6 @@ function buildAdjacency(edges: Edge[]): Map<string, string[]> {
   return adj;
 }
 
-/**
- * Returns true if adding this connection would create a cycle.
- */
 export function wouldCreateCycle(
   nodes: Node[],
   edges: Edge[],
@@ -88,7 +73,7 @@ export function wouldCreateCycle(
       if (!visited.has(next)) {
         if (dfs(next)) return true;
       } else if (stack.has(next)) {
-        return true; // cycle
+        return true; 
       }
     }
     stack.delete(id);
@@ -101,9 +86,6 @@ export function wouldCreateCycle(
   return false;
 }
 
-/**
- * Validate that the workflow graph is a DAG (no cycles).
- */
 export function validateDAG(
   nodes: Node[],
   edges: Edge[]
@@ -121,7 +103,7 @@ export function validateDAG(
       if (!visited.has(next)) {
         if (dfs(next)) return true;
       } else if (stack.has(next)) {
-        return true; // cycle
+        return true; 
       }
     }
     stack.delete(id);
@@ -136,9 +118,6 @@ export function validateDAG(
   return { valid: true };
 }
 
-/**
- * Combined validation for a new connection: type-safe and no cycle.
- */
 export function isValidNewConnection(
   connection: Connection,
   nodes: Node[],

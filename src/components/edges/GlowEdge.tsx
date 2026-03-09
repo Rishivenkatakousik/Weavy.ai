@@ -65,7 +65,7 @@ function GlowEdgeComponent({
 
   return (
     <>
-      {/* Glow layer */}
+      {}
       <path
         d={edgePath}
         fill="none"
@@ -74,7 +74,7 @@ function GlowEdgeComponent({
         strokeOpacity={GLOW_OPACITY}
         className="react-flow__edge-path"
       />
-      {/* Moving beam */}
+      {}
       <circle r={BEAM_R} fill={BEAM_COLOR} opacity={0.9}>
         <animateMotion
           dur={BEAM_DURATION}
@@ -82,7 +82,7 @@ function GlowEdgeComponent({
           path={edgePath}
         />
       </circle>
-      {/* Main edge path and interaction */}
+      {}
       <BaseEdge
         id={id}
         path={edgePath}

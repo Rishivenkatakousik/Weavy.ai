@@ -9,7 +9,7 @@ import { useWorkflowStore } from "@/src/store/workflowStore";
 const ACCEPT_VIDEO = "video/mp4,video/quicktime,video/webm,video/x-m4v";
 const TRANSLOADIT_ASSEMBLY_URL = "https://api2.transloadit.com/assemblies";
 const POLL_INTERVAL_MS = 2000;
-const POLL_MAX_ATTEMPTS = 120; // ~4 min
+const POLL_MAX_ATTEMPTS = 120; 
 
 async function pollAssemblyUntilComplete(assemblyUrl: string): Promise<string> {
   for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {

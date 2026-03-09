@@ -5,11 +5,6 @@ import { createRunAndTriggerLLM } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
 
-/**
- * POST - Start a single-LLM run via Trigger.dev.
- * Creates WorkflowRun + NodeExecution, triggers workflow-llm task.
- * Client should poll GET /api/workflows/[id]/runs/[runId] for result.
- */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

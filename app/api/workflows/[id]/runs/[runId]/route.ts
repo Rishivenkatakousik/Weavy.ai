@@ -4,7 +4,7 @@ import { getWorkflowRun } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
 
-// GET - Single run with node executions (for history panel expand)
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; runId: string }> }

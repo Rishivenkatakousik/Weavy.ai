@@ -5,7 +5,7 @@ import { createRunAndTriggerOrchestrator, getWorkflowRuns } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
 
-// GET - List runs for this workflow (history)
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -35,7 +35,7 @@ export async function GET(
   }
 }
 
-// POST - Start a run (full / single / selected). Creates WorkflowRun and triggers orchestrator.
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

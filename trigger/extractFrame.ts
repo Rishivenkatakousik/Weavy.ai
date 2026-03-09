@@ -18,16 +18,15 @@ function getFfmpegPath(): string {
     const resolved = typeof path === "string" ? path : path?.default ?? null;
     if (resolved && resolved.length > 0) return resolved;
   } catch {
-    // ffmpeg-static not available (e.g. bundled) or failed to load
+    
   }
-  // Deployment image with FFmpeg extension has ffmpeg here
+  
   if (process.platform === "linux" && existsSync("/usr/bin/ffmpeg")) {
     return "/usr/bin/ffmpeg";
   }
   return "ffmpeg";
 }
 
-/** ffprobe is usually next to ffmpeg (same bin dir) */
 function getFfprobePath(): string {
   if (process.env.FFPROBE_PATH) return process.env.FFPROBE_PATH;
   const ffmpeg = getFfmpegPath();
@@ -77,7 +76,7 @@ export const extractFrameTask = task({
       const buf = Buffer.from(await res.arrayBuffer());
       await writeFile(videoPath, buf);
 
-      // Get duration with ffprobe
+      
       const probe = spawnSync(
         ffprobePath,
         [

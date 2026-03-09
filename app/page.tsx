@@ -16,7 +16,7 @@ import Image from "next/image";
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#e8eaed] text-black">
-      {/* Navbar with Banner */}
+      {}
       <div className="w-full bg-[#1a1a1a] text-white text-xs tracking-wide flex items-center justify-center gap-3 py-4">
         <Image
           src="/images/fw.avif"
@@ -28,7 +28,7 @@ export default function LandingPage() {
         <span>Weavy is now a part of Figma</span>
       </div>
 
-      {/* Hero Section */}
+      {}
       <section
         className="relative w-full"
         style={{
@@ -40,7 +40,7 @@ export default function LandingPage() {
       >
         <Navbar />
 
-        {/* Headline */}
+        {}
         <div className="w-full px-10 pt-10 pb-8 relative z-[5] pointer-events-none text-center">
           <h1 className="text-[3.5rem] md:text-[5rem] lg:text-[6.5rem] leading-[0.92] tracking-tight mb-6 flex items-center justify-center gap-8 md:gap-16">
             <span className="font-serif italic">Weavy</span>
@@ -55,7 +55,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* React Flow Canvas */}
+        {}
         <div
           className="absolute left-0 right-0 top-0 bottom-0 overflow-visible"
           style={{ zIndex: 50 }}
@@ -66,16 +66,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Sticky AI Models Section */}
+      {}
       <Models />
 
-      {/* Control the Outcome Section */}
+      {}
       <ControlOutcome />
 
-      {/* Explore Our Workflows Section */}
+      {}
       <Workflows />
 
-      {/* Footer with CTA */}
+      {}
       <Footer />
     </div>
   );

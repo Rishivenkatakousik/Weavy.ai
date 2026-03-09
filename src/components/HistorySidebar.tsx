@@ -268,12 +268,12 @@ export default function HistorySidebar() {
     fetchRuns();
   }, [fetchRuns]);
 
-  // Refetch when a run is started from elsewhere (e.g. Run workflow button)
+  
   useEffect(() => {
     if (historyRefreshTrigger > 0 && workflowId) fetchRuns(true);
   }, [historyRefreshTrigger, workflowId, fetchRuns]);
 
-  // Poll when there are RUNNING or PENDING runs so status indicators update (Phase 10.3)
+  
   const hasActiveRuns = runs.some(
     (r) => r.status === "RUNNING" || r.status === "PENDING"
   );

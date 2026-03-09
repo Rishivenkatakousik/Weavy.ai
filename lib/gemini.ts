@@ -1,8 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
 
-/**
- * Fetch image from URL and return as base64 data URL.
- */
 async function fetchImageAsBase64(url: string): Promise<string> {
   const res = await fetch(url);
   const blob = await res.blob();
@@ -11,9 +8,6 @@ async function fetchImageAsBase64(url: string): Promise<string> {
   return `data:${mime};base64,${buf.toString("base64")}`;
 }
 
-/**
- * Normalize image input (URL or base64/data URL) to { data, mimeType }.
- */
 async function parseImageInput(img: string): Promise<{ data: string; mimeType: string }> {
   if (img.startsWith("http://") || img.startsWith("https://")) {
     const dataUrl = await fetchImageAsBase64(img);

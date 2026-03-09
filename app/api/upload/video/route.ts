@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { uploadVideo } from "@/lib/transloadit";
 
-/**
- * Legacy proxy upload (base64 in body). Subject to Vercel body size limit (~4.5MB).
- * For large files, use POST /api/upload/sign?type=video and direct upload to Transloadit.
- */
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();

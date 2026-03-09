@@ -7,10 +7,6 @@ import type { Node, Edge } from "@xyflow/react";
 
 export type RunScope = "full" | "single" | "selected";
 
-/**
- * Create a workflow run and trigger the orchestrator task (full / single / selected).
- * Loads workflow nodes/edges, validates plan, creates WorkflowRun, triggers orchestrator.
- */
 export async function createRunAndTriggerOrchestrator(params: {
   workflowId: string;
   userId: string;
@@ -54,10 +50,6 @@ export async function createRunAndTriggerOrchestrator(params: {
   return { run, triggerHandle: handle };
 }
 
-/**
- * Create a workflow run and a single LLM node execution, then trigger the LLM task.
- * Returns the created WorkflowRun and the Trigger.dev run handle.
- */
 export async function createRunAndTriggerLLM(params: {
   workflowId: string;
   userId: string;
@@ -103,9 +95,6 @@ export async function createRunAndTriggerLLM(params: {
   return { run, nodeExecution, triggerHandle: handle };
 }
 
-/**
- * Get workflow runs for a workflow (for history panel).
- */
 export async function getWorkflowRuns(workflowId: string, userId: string) {
   return prisma.workflowRun.findMany({
     where: { workflowId, userId },
@@ -115,9 +104,6 @@ export async function getWorkflowRuns(workflowId: string, userId: string) {
   });
 }
 
-/**
- * Get a single run with node executions.
- */
 export async function getWorkflowRun(runId: string, userId: string) {
   return prisma.workflowRun.findFirst({
     where: { id: runId, userId },

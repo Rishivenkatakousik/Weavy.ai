@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
-// GET - Get all workflows for current user
+
 export async function GET() {
   try {
     const { userId } = await auth();
@@ -25,7 +25,7 @@ export async function GET() {
   }
 }
 
-// POST - Create new workflow
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();

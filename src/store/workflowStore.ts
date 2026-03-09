@@ -73,22 +73,22 @@ interface WorkflowState {
   setWorkflowName: (name: string) => void;
   resetWorkflow: () => void;
 
-  // Triggers editor page to save; persistence is done by the editor page via API
+  
   requestSaveTrigger: number;
   requestSave: () => void;
 
-  // Save feedback for UI (Sidebar shows "Workflow saved" when "saved")
+  
   saveStatus: "idle" | "saving" | "saved" | "error";
   setSaveStatus: (status: "idle" | "saving" | "saved" | "error") => void;
 
-  // Triggers history sidebar to refetch runs (e.g. after starting a workflow run)
+  
   historyRefreshTrigger: number;
   requestHistoryRefresh: () => void;
 
-  // When set, a full workflow run is in progress; individual LLM "Run Model" should be disabled
+  
   activeWorkflowRunId: string | null;
   setActiveWorkflowRunId: (id: string | null) => void;
-  // Node execution status for the active run (nodeId -> status); used for glowing edges when RUNNING
+  
   activeRunNodeStatuses: Record<string, "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"> | null;
   setActiveRunNodeStatuses: (statuses: Record<string, string> | null) => void;
   saveWorkflow: () => void;
@@ -332,11 +332,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           : (statuses as Record<string, "PENDING" | "RUNNING" | "SUCCESS" | "FAILED">),
     }),
   saveWorkflow: () => {
-    // No-op: editor page performs PUT when requestSaveTrigger changes or on debounce
+    
   },
 
   loadWorkflow: () => {
-    // No-op: workflow is loaded by the editor page via API
+    
   },
 
   getWorkflowList: () => {

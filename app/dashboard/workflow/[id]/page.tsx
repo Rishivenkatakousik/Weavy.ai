@@ -86,7 +86,7 @@ export default function WorkflowEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const saveWorkflow = useCallback(async (showFeedback = false) => {
-    // Save into the current page's workflow (URL) so loading a demo updates this file instead of creating a new one
+    
     const idToSave = workflowId;
     if (!idToSave || isSaving || saveInProgressRef.current) return;
     saveInProgressRef.current = true;
@@ -230,7 +230,7 @@ export default function WorkflowEditorPage() {
     }
   }, [workflowId, workflowName, nodes, edges, isSaving, router, setWorkflowId, setSaveStatus]);
 
-  // Only schedule auto-save after we've loaded this workflow once (avoids POST on open)
+  
   useEffect(() => {
     if (!isLoading && workflowId && hasLoadedOnce) {
       const timer = setTimeout(saveWorkflow, 2000);
@@ -238,7 +238,7 @@ export default function WorkflowEditorPage() {
     }
   }, [nodes, edges, workflowName, isLoading, workflowId, hasLoadedOnce, saveWorkflow]);
 
-  // When user clicks Save in Sidebar, trigger a save now with loading indicator
+  
   useEffect(() => {
     if (requestSaveTrigger > 0 && hasLoadedOnce) saveWorkflow(true);
   }, [requestSaveTrigger, hasLoadedOnce, saveWorkflow]);

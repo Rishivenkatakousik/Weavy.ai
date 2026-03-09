@@ -1,23 +1,17 @@
-/**
- * Product Marketing Kit sample workflow (Plan Phase 11).
- * Branch A: Upload Image → Crop Image; Text (system) + Text (product) → LLM #1.
- * Branch B: Upload Video → Extract Frame.
- * Convergence: LLM #2 with LLM #1 output + cropped image + extracted frame → marketing tweet.
- */
 
 import type { WorkflowNode } from "@/src/types/workflow";
 import type { Edge } from "@xyflow/react";
 
-// Positions from product.json layout
+
 export const productMarketingKitNodes: WorkflowNode[] = [
-  // Branch A: Image → Crop
+  
   {
     id: "pmk_img",
     type: "image",
     position: { x: 420, y: -75 },
     data: {
       label: "Product Image",
-      imageUrl: "https://pub-e8fef8c0e03b44acb340577811800829.r2.dev/b6e9c3d3d2c241ccafdb83f9928274c7/5298c901b3b8449ebd3b2472c192d62a/7664928808cf427cbbd794aa65e5db0c.mp4",
+      imageUrl: "",
       imageBase64: null,
     },
   },
@@ -35,7 +29,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
       outputUrl: null,
     },
   },
-  // Branch A: Text (system) + Text (product) → LLM #1
+  
   {
     id: "pmk_text_system",
     type: "text",
@@ -79,7 +73,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
     position: { x: 495, y: 930 },
     data: {
       label: "Product Video",
-      videoUrl: "https://pub-e8fef8c0e03b44acb340577811800829.r2.dev/b6e9c3d3d2c241ccafdb83f9928274c7/5298c901b3b8449ebd3b2472c192d62a/7664928808cf427cbbd794aa65e5db0c.mp4",
+      videoUrl: "",
     },
   },
   {
@@ -93,7 +87,7 @@ export const productMarketingKitNodes: WorkflowNode[] = [
       outputUrl: null,
     },
   },
-  // Convergence: LLM #2
+  
   {
     id: "pmk_llm2",
     type: "llm",

@@ -48,7 +48,6 @@ export async function uploadImage(base64Data: string): Promise<string> {
   }
 }
 
-/** Accept base64 video (data URL or raw), upload via Transloadit, return video URL */
 export async function uploadVideo(base64Data: string): Promise<string> {
   const authKey = process.env.TRANSLOADIT_AUTH_KEY ?? process.env.TRANSLOADIT_KEY;
   const authSecret =

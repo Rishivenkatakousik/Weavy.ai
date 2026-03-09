@@ -1,7 +1,3 @@
-/**
- * Brand Strategist AI sample workflow.
- * Flow: Product image + text → Brand Strategist AI → Social, Ads, Email, Video specialists.
- */
 
 import type { WorkflowNode } from "@/src/types/workflow";
 import type { Edge } from "@xyflow/react";

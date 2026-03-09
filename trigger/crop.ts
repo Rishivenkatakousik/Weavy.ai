@@ -18,7 +18,7 @@ function getFfmpegPath(): string {
     const resolved = typeof path === "string" ? path : path?.default ?? null;
     if (resolved && resolved.length > 0) return resolved;
   } catch {
-    // ffmpeg-static not available (e.g. bundled) or failed to load
+    
   }
   if (process.platform === "linux" && existsSync("/usr/bin/ffmpeg")) {
     return "/usr/bin/ffmpeg";
@@ -26,7 +26,6 @@ function getFfmpegPath(): string {
   return "ffmpeg";
 }
 
-/** ffprobe is usually next to ffmpeg (same bin dir) */
 function getFfprobePath(): string {
   if (process.env.FFPROBE_PATH) return process.env.FFPROBE_PATH;
   const ffmpeg = getFfmpegPath();
@@ -86,7 +85,7 @@ export const cropImageTask = task({
       const buf = Buffer.from(await res.arrayBuffer());
       await writeFile(inputPath, buf);
 
-      // Get dimensions with ffprobe (same approach as extractFrame uses ffmpeg)
+      
       const probe = spawnSync(
         ffprobePath,
         [

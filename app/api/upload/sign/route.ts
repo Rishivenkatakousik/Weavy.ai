@@ -5,7 +5,6 @@ import { randomUUID } from "crypto";
 
 const TRANSLOADIT_ASSEMBLY_URL = "https://api2.transloadit.com/assemblies";
 
-/** Video assembly steps (match lib/transloadit.ts uploadVideo) */
 const VIDEO_STEPS = {
   video: {
     use: ":original",
@@ -16,7 +15,6 @@ const VIDEO_STEPS = {
   },
 };
 
-/** Image assembly steps (match lib/transloadit.ts uploadImage) */
 const IMAGE_STEPS = {
   image: {
     use: ":original",
@@ -28,11 +26,6 @@ const IMAGE_STEPS = {
   },
 };
 
-/**
- * POST /api/upload/sign?type=video|image
- * Returns { params, signature } for client-side direct upload to Transloadit.
- * Use this to avoid Vercel body size limits; large files must use direct upload.
- */
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
