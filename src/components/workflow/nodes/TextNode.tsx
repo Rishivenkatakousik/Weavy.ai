@@ -3,8 +3,8 @@
 import React, { memo, useCallback } from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
 import { Trash2, Type } from "lucide-react";
-import { TextNodeData } from "@/src/types/workflow";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { TextNodeData } from "@/types/workflow";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 const TextNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as TextNodeData;

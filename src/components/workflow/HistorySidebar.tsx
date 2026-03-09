@@ -9,7 +9,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 const MIN_PANEL_WIDTH = 200;
 const MAX_PANEL_WIDTH = 600;

@@ -2,27 +2,26 @@
 
 import React, { memo, useCallback, useRef, useState } from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
-import { Trash2, Video, Upload, X, Loader2 } from "lucide-react";
-import { VideoNodeData } from "@/src/types/workflow";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { Trash2, ImageIcon, Upload, X, Loader2 } from "lucide-react";
+import { ImageNodeData } from "@/types/workflow";
+import { useWorkflowStore } from "@/store/workflowStore";
 
-const ACCEPT_VIDEO = "video/mp4,video/quicktime,video/webm,video/x-m4v";
 const TRANSLOADIT_ASSEMBLY_URL = "https://api2.transloadit.com/assemblies";
 const POLL_INTERVAL_MS = 2000;
-const POLL_MAX_ATTEMPTS = 120; 
+const POLL_MAX_ATTEMPTS = 120;
 
 async function pollAssemblyUntilComplete(assemblyUrl: string): Promise<string> {
   for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {
     const res = await fetch(assemblyUrl);
     const data = (await res.json()) as {
       ok?: string;
-      results?: { video?: Array<{ ssl_url?: string; url?: string }> };
+      results?: { image?: Array<{ ssl_url?: string; url?: string }> };
     };
     if (data.ok === "ASSEMBLY_COMPLETED") {
-      const first = data.results?.video?.[0];
+      const first = data.results?.image?.[0];
       const url = first?.ssl_url ?? first?.url;
       if (url && typeof url === "string") return url;
-      throw new Error("Assembly completed but no video URL in results");
+      throw new Error("Assembly completed but no image URL in results");
     }
     if (data.ok === "ASSEMBLY_CANCELED" || data.ok === "ASSEMBLY_ERROR") {
       const msg = (data as { message?: string }).message ?? "Assembly failed";
@@ -33,8 +32,8 @@ async function pollAssemblyUntilComplete(assemblyUrl: string): Promise<string> {
   throw new Error("Upload timed out");
 }
 
-const VideoNode = memo(({ id, data, selected }: NodeProps) => {
-  const nodeData = data as VideoNodeData;
+const ImageNode = memo(({ id, data, selected }: NodeProps) => {
+  const nodeData = data as ImageNodeData;
   const { updateNodeData, deleteNode } = useWorkflowStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -51,12 +50,12 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
     deleteNode(id);
   }, [id, deleteNode]);
 
-  const uploadVideo = useCallback(
+  const uploadImage = useCallback(
     async (file: File) => {
       setUploadError(null);
       setIsUploading(true);
       try {
-        const signRes = await fetch("/api/upload/sign?type=video", {
+        const signRes = await fetch("/api/upload/sign?type=image", {
           method: "POST",
         });
         if (!signRes.ok) {
@@ -86,10 +85,10 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
           );
         }
 
-        const videoUrl = await pollAssemblyUntilComplete(
+        const imageUrl = await pollAssemblyUntilComplete(
           uploadData.assembly_ssl_url
         );
-        updateNodeData(id, { videoUrl });
+        updateNodeData(id, { imageUrl, imageBase64: undefined });
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Upload failed.";
@@ -104,33 +103,33 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) uploadVideo(file);
+      if (file) uploadImage(file);
     },
-    [uploadVideo]
+    [uploadImage]
   );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       const file = e.dataTransfer.files[0];
-      const allowed = ["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"];
+      const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
       if (file && allowed.includes(file.type)) {
-        uploadVideo(file);
+        uploadImage(file);
       }
     },
-    [uploadVideo]
+    [uploadImage]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
   }, []);
 
-  const clearVideo = useCallback(() => {
+  const clearImage = useCallback(() => {
     setUploadError(null);
-    updateNodeData(id, { videoUrl: null });
+    updateNodeData(id, { imageUrl: null, imageBase64: null });
   }, [id, updateNodeData]);
 
-  const videoUrl = nodeData.videoUrl;
+  const displayImageSrc = nodeData.imageUrl || nodeData.imageBase64;
 
   return (
     <div
@@ -143,7 +142,7 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
       <div className="flex items-center justify-between rounded-t-lg border-b border-neutral-700 bg-neutral-900 px-2 py-1.5">
         <div className="flex items-center gap-2">
           <div className="rounded bg-neutral-700 p-1">
-            <Video className="h-3 w-3 text-neutral-400" />
+            <ImageIcon className="h-3 w-3 text-neutral-400" />
           </div>
           <input
             type="text"
@@ -165,26 +164,26 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept={ACCEPT_VIDEO}
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
           onChange={handleFileChange}
           className="hidden"
         />
 
         {isUploading ? (
-          <div className="flex h-36 w-full min-w-0 flex-col items-center justify-center gap-2 rounded border-2 border-dashed border-neutral-700">
+          <div className="flex h-40 w-full min-w-0 flex-col items-center justify-center gap-2 rounded border-2 border-dashed border-neutral-700">
             <Loader2 className="h-6 w-6 animate-spin text-neutral-500" />
-            <span className="text-xs text-neutral-500">Uploading video...</span>
+            <span className="text-xs text-neutral-500">Uploading...</span>
           </div>
-        ) : videoUrl ? (
+        ) : displayImageSrc ? (
           <div className="relative">
-            <video
-              src={videoUrl}
-              controls
-              className="h-36 w-full min-w-0 rounded border border-neutral-700 object-contain bg-black"
+            <img
+              src={displayImageSrc}
+              alt="Uploaded"
+              className="h-40 w-full min-w-0 rounded border border-neutral-700 object-cover"
             />
             <button
               type="button"
-              onClick={clearVideo}
+              onClick={clearImage}
               className="absolute right-2 top-2 rounded bg-black/70 p-1.5 hover:bg-neutral-600"
             >
               <X className="h-4 w-4 text-white" />
@@ -198,10 +197,10 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
               onClick={() => fileInputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              className="flex h-36 w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-neutral-700 hover:border-neutral-600 hover:bg-neutral-900"
+              className="flex h-40 w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-neutral-700 hover:border-neutral-600 hover:bg-neutral-900"
             >
               <Upload className="h-6 w-6 text-neutral-500" />
-              <span className="text-xs text-neutral-500">Upload video (mp4, mov, webm, m4v)</span>
+              <span className="text-xs text-neutral-500">Upload</span>
             </div>
             {uploadError && (
               <p className="text-xs text-red-400" title={uploadError}>
@@ -223,6 +222,6 @@ const VideoNode = memo(({ id, data, selected }: NodeProps) => {
   );
 });
 
-VideoNode.displayName = "VideoNode";
+ImageNode.displayName = "ImageNode";
 
-export default VideoNode;
+export default ImageNode;

@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import WorkflowBuilder from "@/src/components/WorkflowBuilder";
-import { useWorkflowStore } from "@/src/store/workflowStore";
-import Loading from "@/components/Loading";
+import WorkflowBuilder from "@/components/workflow/WorkflowBuilder";
+import { useWorkflowStore } from "@/store/workflowStore";
+import Loading from "@/components/ui/Loading";
 
 export default function WorkflowEditorPage() {
   const router = useRouter();

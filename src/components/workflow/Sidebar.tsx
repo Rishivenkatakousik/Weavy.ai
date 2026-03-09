@@ -22,7 +22,7 @@ import {
   Play,
   Loader2,
 } from "lucide-react";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 interface SidebarProps {
   onDragStart: (

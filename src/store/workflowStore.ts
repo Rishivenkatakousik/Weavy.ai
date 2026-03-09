@@ -16,9 +16,9 @@ import {
   CropImageNodeData,
   ExtractFrameNodeData,
   Workflow,
-} from "@/src/types/workflow";
-import { getBrandStrategistTemplate } from "@/src/templates/brandStrategistWorkflow";
-import { getProductMarketingKitTemplate } from "@/src/templates/productMarketingKitWorkflow";
+} from "@/types/workflow";
+import { getBrandStrategistTemplate } from "@/templates/brandStrategistWorkflow";
+import { getProductMarketingKitTemplate } from "@/templates/productMarketingKitWorkflow";
 import { isValidNewConnection } from "@/lib/workflowValidation";
 
 interface HistoryState {

@@ -1,7 +1,7 @@
 import { task, logger } from "@trigger.dev/sdk";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { generateContentGemini } from "../lib/gemini";
+import { generateContentGemini } from "@/lib/gemini";
 
 function getPrisma() {
   const url = process.env.DATABASE_URL;

@@ -2,14 +2,14 @@ import { task, tasks, logger } from "@trigger.dev/sdk";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { Node, Edge } from "@xyflow/react";
-import { validateDAG } from "../lib/workflowValidation";
+import { validateDAG } from "@/lib/workflowValidation";
 import {
   getExecutionPlan,
   getNodesToRun,
   getIncomingByNode,
   resolveInputsForNode,
   type RunScope,
-} from "../lib/execution";
+} from "@/lib/execution";
 import type { llmTask } from "./llm";
 import type { cropImageTask } from "./crop";
 import type { extractFrameTask } from "./extractFrame";

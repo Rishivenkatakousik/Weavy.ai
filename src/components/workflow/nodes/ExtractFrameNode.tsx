@@ -3,8 +3,8 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
 import { Trash2, Film, ChevronUp, ChevronDown } from "lucide-react";
-import { ExtractFrameNodeData } from "@/src/types/workflow";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { ExtractFrameNodeData } from "@/types/workflow";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 const ExtractFrameNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as ExtractFrameNodeData;

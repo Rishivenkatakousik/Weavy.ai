@@ -1,5 +1,5 @@
 
-import type { WorkflowNode } from "@/src/types/workflow";
+import type { WorkflowNode } from "@/types/workflow";
 import type { Edge } from "@xyflow/react";
 
 export const brandStrategistNodes: WorkflowNode[] = [

@@ -6,7 +6,7 @@ import {
   getBezierPath,
   type EdgeProps,
 } from "@xyflow/react";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 const DEFAULT_STROKE = "#525252";
 const DEFAULT_STROKE_WIDTH = 2;

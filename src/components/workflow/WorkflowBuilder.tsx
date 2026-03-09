@@ -2,10 +2,10 @@
 
 import React, { useCallback, useEffect, useRef } from "react";
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
-import Sidebar from "@/src/components/Sidebar";
-import Canvas from "@/src/components/Canvas";
-import HistorySidebar from "@/src/components/HistorySidebar";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import Sidebar from "@/components/workflow/Sidebar";
+import Canvas from "@/components/workflow/Canvas";
+import HistorySidebar from "@/components/workflow/HistorySidebar";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 const POLL_INTERVAL_MS = 2000;
 

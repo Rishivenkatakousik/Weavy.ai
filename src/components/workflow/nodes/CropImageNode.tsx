@@ -3,8 +3,8 @@
 import React, { memo, useCallback } from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
 import { Trash2, Crop, ChevronUp, ChevronDown } from "lucide-react";
-import { CropImageNodeData } from "@/src/types/workflow";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { CropImageNodeData } from "@/types/workflow";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 const CropImageNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as CropImageNodeData;

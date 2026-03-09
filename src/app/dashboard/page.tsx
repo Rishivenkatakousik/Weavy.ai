@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Trash2 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import Loading from "@/components/Loading";
+import Loading from "@/components/ui/Loading";
 
 function WorkflowIcon({ className }: { className?: string }) {
   return (

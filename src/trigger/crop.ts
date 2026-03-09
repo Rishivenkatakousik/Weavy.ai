@@ -8,7 +8,7 @@ import { tmpdir } from "os";
 import { randomUUID } from "crypto";
 import { spawnSync } from "child_process";
 import { createRequire } from "module";
-import { uploadImage } from "../lib/transloadit";
+import { uploadImage } from "@/lib/transloadit";
 
 function getFfmpegPath(): string {
   if (process.env.FFMPEG_PATH) return process.env.FFMPEG_PATH;
@@ -20,7 +20,6 @@ function getFfmpegPath(): string {
   } catch {
     
   }
-  
   if (process.platform === "linux" && existsSync("/usr/bin/ffmpeg")) {
     return "/usr/bin/ffmpeg";
   }
@@ -49,22 +48,32 @@ function getPrisma() {
   return new PrismaClient({ adapter });
 }
 
-export const extractFrameTask = task({
-  id: "workflow-extract-frame",
+export const cropImageTask = task({
+  id: "workflow-crop-image",
   run: async (payload: {
     workflowRunId: string;
     nodeExecutionId: string;
-    videoUrl: string;
-    timestampPercentage: number;
+    imageUrl: string;
+    xPercent: number;
+    yPercent: number;
+    widthPercent: number;
+    heightPercent: number;
   }) => {
     const startedAt = Date.now();
-    const { workflowRunId, nodeExecutionId, videoUrl, timestampPercentage } = payload;
+    const {
+      workflowRunId,
+      nodeExecutionId,
+      imageUrl,
+      xPercent,
+      yPercent,
+      widthPercent,
+      heightPercent,
+    } = payload;
     const prisma = getPrisma();
-
     const ffmpegPath = getFfmpegPath();
     const ffprobePath = getFfprobePath();
-    const videoPath = join(tmpdir(), `galaxy-video-${randomUUID()}.mp4`);
-    const framePath = join(tmpdir(), `galaxy-frame-${randomUUID()}.jpg`);
+    const inputPath = join(tmpdir(), `galaxy-crop-input-${randomUUID()}`);
+    const outputPath = join(tmpdir(), `galaxy-crop-output-${randomUUID()}.png`);
 
     try {
       await prisma.nodeExecution.update({
@@ -72,9 +81,9 @@ export const extractFrameTask = task({
         data: { status: "RUNNING" },
       });
 
-      const res = await fetch(videoUrl);
+      const res = await fetch(imageUrl);
       const buf = Buffer.from(await res.arrayBuffer());
-      await writeFile(videoPath, buf);
+      await writeFile(inputPath, buf);
 
       
       const probe = spawnSync(
@@ -82,55 +91,68 @@ export const extractFrameTask = task({
         [
           "-v",
           "error",
+          "-select_streams",
+          "v:0",
           "-show_entries",
-          "format=duration",
+          "stream=width,height",
           "-of",
-          "default=noprint_wrappers=1:nokey=1",
-          videoPath,
+          "json",
+          inputPath,
         ],
         { encoding: "utf8" }
       );
-      
-      let durationSeconds = 0;
-      if (probe.status === 0 && probe.stdout) {
-        durationSeconds = parseFloat(probe.stdout.trim()) || 0;
+      if (probe.status !== 0) {
+        throw new Error(probe.stderr || "ffprobe failed to get image dimensions");
       }
-      
-      if (!durationSeconds) {
-         logger.warn("Could not determine video duration, defaulting to 0s", { output: probe.stdout, error: probe.stderr });
+      let probeJson: { streams?: Array<{ width?: number; height?: number }> };
+      try {
+        probeJson = JSON.parse(probe.stdout) as { streams?: Array<{ width?: number; height?: number }> };
+      } catch {
+        throw new Error("ffprobe did not return valid JSON");
       }
+      const stream = probeJson.streams?.[0];
+      const w = stream?.width ?? 1;
+      const h = stream?.height ?? 1;
 
-      const targetSeconds = (timestampPercentage / 100) * durationSeconds;
+      const left = Math.round((xPercent / 100) * w);
+      const top = Math.round((yPercent / 100) * h);
+      const width = Math.round((widthPercent / 100) * w);
+      const height = Math.round((heightPercent / 100) * h);
 
-      const result = spawnSync(
+      const cropW = Math.min(width, w - left);
+      const cropH = Math.min(height, h - top);
+      const cropX = Math.max(0, left);
+      const cropY = Math.max(0, top);
+
+      const cropResult = spawnSync(
         ffmpegPath,
         [
           "-y",
-          "-ss",
-          String(targetSeconds),
           "-i",
-          videoPath,
-          "-vframes",
+          inputPath,
+          "-vf",
+          `crop=${cropW}:${cropH}:${cropX}:${cropY}`,
+          "-frames:v",
           "1",
           "-q:v",
           "2",
-          framePath,
+          outputPath,
         ],
         { stdio: "pipe", encoding: "utf8" }
       );
 
-      const spawnErr = result.error as NodeJS.ErrnoException | undefined;
+      const spawnErr = cropResult.error as NodeJS.ErrnoException | undefined;
       if (spawnErr?.code === "ENOENT") {
         throw new Error(
           "ffmpeg not found. Install ffmpeg and add it to PATH, or set FFMPEG_PATH in .env to the full path (e.g. on Windows: C:\\ffmpeg\\bin\\ffmpeg.exe)."
         );
       }
-      if (result.status !== 0) {
-        throw new Error(result.stderr || result.error?.message || "FFmpeg failed");
+      if (cropResult.status !== 0) {
+        throw new Error(cropResult.stderr || cropResult.error?.message || "FFmpeg crop failed");
       }
 
-      const frameBuffer = await readFile(framePath);
-      const base64 = `data:image/jpeg;base64,${frameBuffer.toString("base64")}`;
+      const croppedBuffer = await readFile(outputPath);
+      const base64 = `data:image/png;base64,${croppedBuffer.toString("base64")}`;
       const outputUrl = await uploadImage(base64);
 
       const finishedAt = Date.now();
@@ -165,7 +187,7 @@ export const extractFrameTask = task({
         });
       }
 
-      logger.log("Extract frame task completed", { nodeExecutionId, durationMs });
+      logger.log("Crop task completed", { nodeExecutionId, durationMs });
       return { outputUrl, durationMs };
     } catch (error) {
       const finishedAt = Date.now();
@@ -200,11 +222,11 @@ export const extractFrameTask = task({
         });
       }
 
-      logger.error("Extract frame task failed", { nodeExecutionId, error: message });
+      logger.error("Crop task failed", { nodeExecutionId, error: message });
       throw error;
     } finally {
-      await unlink(videoPath).catch(() => {});
-      await unlink(framePath).catch(() => {});
+      await unlink(inputPath).catch(() => {});
+      await unlink(outputPath).catch(() => {});
     }
   },
 });

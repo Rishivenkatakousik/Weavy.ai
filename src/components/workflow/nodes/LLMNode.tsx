@@ -19,8 +19,8 @@ import {
   TextNodeData,
   ImageNodeData,
   GEMINI_MODELS,
-} from "@/src/types/workflow";
-import { useWorkflowStore } from "@/src/store/workflowStore";
+} from "@/types/workflow";
+import { useWorkflowStore } from "@/store/workflowStore";
 import { validateDAG } from "@/lib/workflowValidation";
 
 const POLL_INTERVAL_MS = 1500;

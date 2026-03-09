@@ -24,7 +24,7 @@ import {
   Redo2,
 } from "lucide-react";
 
-import { useWorkflowStore } from "@/src/store/workflowStore";
+import { useWorkflowStore } from "@/store/workflowStore";
 import { isValidNewConnection } from "@/lib/workflowValidation";
 import TextNode from "./nodes/TextNode";
 import ImageNode from "./nodes/ImageNode";
